@@ -1,0 +1,175 @@
+package com.example.benative.ui.screen
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.benative.R
+import com.example.benative.navigation.Screen
+import com.example.benative.ui.theme.BeNativeTheme
+import com.example.benative.ui.theme.MajorMonoDisplay
+import com.example.benative.ui.theme.ManropeBold
+import androidx.core.graphics.toColorInt
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SignInScreen(onNavigateTo: (Screen) -> Unit = {}) {
+    var login by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
+            modifier = Modifier.fillMaxSize().background(Color(0xFFB3E5FC))
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.background_clouds_5),
+                contentDescription = null,
+                modifier = Modifier.fillMaxWidth(),
+                contentScale = ContentScale.Crop,
+                alignment = Alignment.TopStart
+            )
+
+            Text(
+                text = "sign in",
+                fontSize = 30.sp,
+                color = Color.White,
+                fontFamily = MajorMonoDisplay
+            )
+
+            Spacer(modifier = Modifier.size(30.dp))
+
+            OutlinedTextField(
+                value = login,
+                onValueChange = { login = it },
+                modifier = Modifier
+                    .width(300.dp)
+                    .background(Color("#F2F2F2".toColorInt()), RoundedCornerShape(30.dp)),
+                placeholder = {
+                    Text(text = "login",
+                        fontFamily = MajorMonoDisplay,
+                        color = Color(0xFF636363),
+                        fontSize = 18.sp
+                    )
+                },
+                shape = RoundedCornerShape(30.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                        errorTextColor = Color.Red,
+                        focusedBorderColor = Color("#FFFFFF".toColorInt()),
+
+                    )
+
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                modifier = Modifier
+                    .width(300.dp)
+                    .background(Color("#F2F2F2".toColorInt()), RoundedCornerShape(30.dp)),
+                placeholder = {
+                    Text(text = "password",
+                        fontFamily = MajorMonoDisplay,
+                        color = Color(0xFF636363),
+                        fontSize = 18.sp
+                    )
+                },
+                shape = RoundedCornerShape(30.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    errorTextColor = Color.Red,
+                    focusedBorderColor = Color("#FFFFFF".toColorInt()),
+//                        unfocusedBorderColor = Color.Gray,
+//                        disabledBorderColor = Color.LightGray,
+//                        errorBorderColor = COMPILED_CODE,
+//                        focusedLeadingIconColor = COMPILED_CODE,
+//                        unfocusedLeadingIconColor = COMPILED_CODE,
+//                        disabledLeadingIconColor = COMPILED_CODE,
+//                        errorLeadingIconColor = COMPILED_CODE,
+//                        focusedTrailingIconColor = COMPILED_CODE,
+//                        unfocusedTrailingIconColor = COMPILED_CODE,
+//                        disabledTrailingIconColor = COMPILED_CODE,
+//                        errorTrailingIconColor = COMPILED_CODE,
+//                        focusedLabelColor = COMPILED_CODE,
+//                        unfocusedLabelColor = COMPILED_CODE,
+//                        disabledLabelColor = COMPILED_CODE,
+//                        errorLabelColor = COMPILED_CODE,
+//                        focusedPlaceholderColor = COMPILED_CODE,
+//                        unfocusedPlaceholderColor = COMPILED_CODE,
+//                        disabledPlaceholderColor = COMPILED_CODE,
+//                        errorPlaceholderColor = COMPILED_CODE,
+//                        focusedSupportingTextColor = COMPILED_CODE,
+//                        unfocusedSupportingTextColor = COMPILED_CODE,
+//                        disabledSupportingTextColor = COMPILED_CODE,
+//                        errorSupportingTextColor = COMPILED_CODE,
+//                        focusedPrefixColor = COMPILED_CODE,
+//                        unfocusedPrefixColor = COMPILED_CODE,
+//                        disabledPrefixColor = COMPILED_CODE,
+//                        errorPrefixColor = COMPILED_CODE,
+//                        focusedSuffixColor = COMPILED_CODE,
+//                        unfocusedSuffixColor = COMPILED_CODE,
+//                        disabledSuffixColor = COMPILED_CODE,
+//                        errorSuffixColor = COMPILED_CODE,
+                )
+
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    // Логика авторизации
+//                    navController.navigate("main") {
+//                        popUpTo("sign_in") { inclusive = true }
+//                    }
+                },
+                shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                modifier = Modifier.width(120.dp)
+            ) {
+                Text(
+                    text = "Go",
+                    color = Color.White,
+                    fontFamily = ManropeBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextButton(onClick = {
+                onNavigateTo(Screen.SignUpScreen)
+            }) {
+                Text(
+                    text = "Don't have an account? Sign up",
+                    color = Color.White,
+                    fontFamily = FontFamily.SansSerif,
+                    style = TextStyle(textDecoration = TextDecoration.Underline)
+                )
+            }
+        }
+    }
+
+
+@Preview(showBackground = true)
+@Composable
+fun SignInScreenPreview() {
+    BeNativeTheme {
+        SignInScreen()
+    }
+}
