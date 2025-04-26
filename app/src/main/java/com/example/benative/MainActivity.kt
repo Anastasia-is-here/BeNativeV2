@@ -24,10 +24,10 @@ class MainActivity : ComponentActivity() {
             BeNativeTheme {
                 val navController = rememberNavController()
                 Navigation(navController)
-                }
             }
         }
     }
+}
 
 
 @Preview(showBackground = true)

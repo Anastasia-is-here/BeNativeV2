@@ -1,5 +1,6 @@
 package com.example.benative.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -26,7 +27,6 @@ import com.example.benative.ui.theme.BeNativeTheme
 import com.example.benative.ui.theme.MajorMonoDisplay
 import com.example.benative.ui.theme.ManropeBold
 import androidx.core.graphics.toColorInt
-import com.example.benative.LoginRequest
 import com.example.benative.server.ApiClient
 import com.example.benative.server.AuthManager
 import com.example.benative.server.ErrorResponse
@@ -173,12 +173,11 @@ fun SignInScreen(onNavigateTo: (Screen) -> Unit = {}) {
 
                     coroutineScope.launch {
                         try {
-                            val request = LoginRequest(login, password)
+                            val request = com.example.benative.server.LoginRequest(login, password)
                             val response = ApiClient.client.post(ApiClient.loginUrl) {
                                 contentType(ContentType.Application.Json)
                                 setBody(request)
                             }
-
                             if (response.status.isSuccess()) {
                                 val loginResponse = response.body<LoginResponse>()
                                 // Сохраняем токен

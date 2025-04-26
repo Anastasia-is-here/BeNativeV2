@@ -1,35 +1,33 @@
 [versions]
-agp = "8.9.0"
+agp = "8.9.2"
+coreKtxVersion = "1.16.0"
 coreSplashscreen = "1.0.1"
 exposedDao = "0.41.1"
 jbcrypt = "0.4"
 jjwt = "0.9.1"
-kotlin = "2.0.0"
-coreKtx = "1.15.0"
+kotlin = "2.1.20"
+coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-kotlinxCoroutinesAndroid = "1.7.3"
+kotlinxCoroutinesAndroid = "1.10.1"
 kotlinxDatetime = "0.6.2"
-kotlinxSerializationJson = "1.6.3"
-ktorClientAndroid = "2.3.12"
-ktorClientContentNegotiation = "2.3.12"
-ktorSerializationKotlinxJson = "2.3.12"
-ktorServerAuth = "2.3.8"
-ktorServerAuthJwt = "2.3.8"
-ktorServerContentNegotiation = "2.3.8"
-ktorSerializationJackson = "2.3.8"
-ktorServerCore = "2.3.8"
-ktorServerNetty = "2.3.8"
+kotlinxSerializationJsonVersion = "1.8.0"
+ktorServerAuth = "3.1.2"
+ktorServerAuthJwt = "3.1.2"
+ktorSerializationJackson = "3.1.2"
+ktorServerNetty = "3.1.2"
 lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.9.3"
-composeBom = "2024.04.01"
+activityCompose = "1.10.1"
+composeBom = "2025.04.01"
 logbackClassic = "1.2.11"
 mysqlConnectorJava = "8.0.33"
 navigationCompose = "2.8.9"
+ktor-version = "3.1.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-core-ktx-v1131 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposedDao" }
@@ -53,15 +51,15 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
-ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktorClientAndroid" }
-ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktorClientContentNegotiation" }
-ktor-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson", version.ref = "ktorSerializationJackson" }
-ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorSerializationKotlinxJson" }
-ktor-server-auth = { module = "io.ktor:ktor-server-auth", version.ref = "ktorServerAuth" }
-ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt", version.ref = "ktorServerAuthJwt" }
-ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktorServerContentNegotiation" }
-ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktorServerCore" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJsonVersion" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor-version" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor-version" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor-version" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor-version" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor-version" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor-version" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor-version" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor-version" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktorServerNetty" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logbackClassic" }
 mysql-connector-java = { module = "mysql:mysql-connector-java", version.ref = "mysqlConnectorJava" }
@@ -70,4 +68,5 @@ mysql-connector-java = { module = "mysql:mysql-connector-java", version.ref = "m
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
+ktor = { id = "io.ktor.plugin", version.ref = "ktor-version" }
+kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
