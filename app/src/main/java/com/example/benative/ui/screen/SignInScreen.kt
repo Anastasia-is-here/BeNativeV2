@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -25,76 +26,95 @@ import com.example.benative.ui.theme.BeNativeTheme
 import com.example.benative.ui.theme.MajorMonoDisplay
 import com.example.benative.ui.theme.ManropeBold
 import androidx.core.graphics.toColorInt
+import com.example.benative.LoginRequest
+import com.example.benative.server.ApiClient
+import com.example.benative.server.AuthManager
+import com.example.benative.server.ErrorResponse
+import com.example.benative.server.LoginResponse
+import io.ktor.client.call.body
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignInScreen(onNavigateTo: (Screen) -> Unit = {}) {
     var login by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top,
-            modifier = Modifier.fillMaxSize().background(Color(0xFFB3E5FC))
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.background_clouds_5),
-                contentDescription = null,
-                modifier = Modifier.fillMaxWidth(),
-                contentScale = ContentScale.Crop,
-                alignment = Alignment.TopStart
-            )
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
-            Text(
-                text = "sign in",
-                fontSize = 30.sp,
-                color = Color.White,
-                fontFamily = MajorMonoDisplay
-            )
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top,
+        modifier = Modifier.fillMaxSize().background(Color(0xFFB3E5FC))
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.background_clouds_5),
+            contentDescription = null,
+            modifier = Modifier.fillMaxWidth(),
+            contentScale = ContentScale.Crop,
+            alignment = Alignment.TopStart
+        )
 
-            Spacer(modifier = Modifier.size(30.dp))
+        Text(
+            text = "sign in",
+            fontSize = 30.sp,
+            color = Color.White,
+            fontFamily = MajorMonoDisplay
+        )
 
-            OutlinedTextField(
-                value = login,
-                onValueChange = { login = it },
-                modifier = Modifier
-                    .width(300.dp)
-                    .background(Color("#F2F2F2".toColorInt()), RoundedCornerShape(30.dp)),
-                placeholder = {
-                    Text(text = "login",
-                        fontFamily = MajorMonoDisplay,
-                        color = Color(0xFF636363),
-                        fontSize = 18.sp
-                    )
-                },
-                shape = RoundedCornerShape(30.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                        errorTextColor = Color.Red,
-                        focusedBorderColor = Color("#FFFFFF".toColorInt()),
+        Spacer(modifier = Modifier.size(30.dp))
 
-                    )
+        OutlinedTextField(
+            value = login,
+            onValueChange = { login = it },
+            modifier = Modifier
+                .width(300.dp)
+                .background(Color("#F2F2F2".toColorInt()), RoundedCornerShape(30.dp)),
+            placeholder = {
+                Text(
+                    text = "login",
+                    fontFamily = MajorMonoDisplay,
+                    color = Color(0xFF636363),
+                    fontSize = 18.sp
+                )
+            },
+            shape = RoundedCornerShape(30.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                errorTextColor = Color.Red,
+                focusedBorderColor = Color("#FFFFFF".toColorInt()),
 
-            )
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        )
 
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                modifier = Modifier
-                    .width(300.dp)
-                    .background(Color("#F2F2F2".toColorInt()), RoundedCornerShape(30.dp)),
-                placeholder = {
-                    Text(text = "password",
-                        fontFamily = MajorMonoDisplay,
-                        color = Color(0xFF636363),
-                        fontSize = 18.sp
-                    )
-                },
-                shape = RoundedCornerShape(30.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    errorTextColor = Color.Red,
-                    focusedBorderColor = Color("#FFFFFF".toColorInt()),
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            modifier = Modifier
+                .width(300.dp)
+                .background(Color("#F2F2F2".toColorInt()), RoundedCornerShape(30.dp)),
+            placeholder = {
+                Text(
+                    text = "password",
+                    fontFamily = MajorMonoDisplay,
+                    color = Color(0xFF636363),
+                    fontSize = 18.sp
+                )
+            },
+            shape = RoundedCornerShape(30.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                errorTextColor = Color.Red,
+                focusedBorderColor = Color("#FFFFFF".toColorInt()),
 //                        unfocusedBorderColor = Color.Gray,
 //                        disabledBorderColor = Color.LightGray,
 //                        errorBorderColor = COMPILED_CODE,
@@ -126,18 +146,55 @@ fun SignInScreen(onNavigateTo: (Screen) -> Unit = {}) {
 //                        unfocusedSuffixColor = COMPILED_CODE,
 //                        disabledSuffixColor = COMPILED_CODE,
 //                        errorSuffixColor = COMPILED_CODE,
-                )
-
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+        )
 
+        Spacer(modifier = Modifier.height(24.dp))
+
+        if (isLoading) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(48.dp)
+            )
+        } else {
             Button(
                 onClick = {
-                    // Логика авторизации
-//                    navController.navigate("main") {
-//                        popUpTo("sign_in") { inclusive = true }
-//                    }
+                    if (login.isEmpty() || password.isEmpty()) {
+                        errorMessage = "All fields are required"
+                        return@Button
+                    }
+                    if (password.length > 72) {
+                        errorMessage = "Password must be 72 characters or less"
+                        return@Button
+                    }
+                    isLoading = true
+                    errorMessage = null
+
+                    coroutineScope.launch {
+                        try {
+                            val request = LoginRequest(login, password)
+                            val response = ApiClient.client.post(ApiClient.loginUrl) {
+                                contentType(ContentType.Application.Json)
+                                setBody(request)
+                            }
+
+                            if (response.status.isSuccess()) {
+                                val loginResponse = response.body<LoginResponse>()
+                                // Сохраняем токен
+                                AuthManager.saveToken(context, loginResponse.token)
+                                // Переходим на главный экран
+                                onNavigateTo(Screen.SplashScreen)
+                            } else {
+                                val errorResponse = response.body<ErrorResponse>()
+                                errorMessage = errorResponse.error
+                            }
+                        } catch (e: Exception) {
+                            errorMessage = "Error: ${e.message}"
+                        } finally {
+                            isLoading = false
+                        }
+                    }
                 },
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -152,6 +209,16 @@ fun SignInScreen(onNavigateTo: (Screen) -> Unit = {}) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            errorMessage?.let {
+                Text(
+                    text = it,
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             TextButton(onClick = {
                 onNavigateTo(Screen.SignUpScreen)
             }) {
@@ -164,7 +231,7 @@ fun SignInScreen(onNavigateTo: (Screen) -> Unit = {}) {
             }
         }
     }
-
+}
 
 @Preview(showBackground = true)
 @Composable
