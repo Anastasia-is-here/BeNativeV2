@@ -1,0 +1,259 @@
+package com.example.benative.ui.screen
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.benative.R
+import com.example.benative.navigation.Screen
+import com.example.benative.server.ApiClient
+import com.example.benative.server.AuthManager
+import com.example.benative.server.ErrorResponse
+import com.example.benative.server.UserResponse
+import com.example.benative.ui.theme.BeNativeTheme
+import com.example.benative.ui.theme.ManropeBold
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import kotlinx.coroutines.launch
+
+@Composable
+fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    // Состояние для прогресса
+    var progress by remember { mutableFloatStateOf(0f) } // Начальное значение
+    var level by remember { mutableIntStateOf(0) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            try {
+                val token = AuthManager.getToken(context)
+                if (token == null) {
+                    errorMessage = "Not authenticated"
+                    isLoading = false
+                    return@launch
+                }
+
+                val response = ApiClient.client.get(ApiClient.profileUrl) {
+                    header(HttpHeaders.Authorization, "Bearer $token")
+                    contentType(ContentType.Application.Json)
+                }
+
+                if (response.status.isSuccess()) {
+                    val userResponse = response.body<UserResponse>()
+                    // Преобразуем experience в процент (предположим, максимум для уровня 1 = 100)
+                    val maxExperienceForLevel = 100f
+                    progress = (userResponse.experience % maxExperienceForLevel)
+                    level = (userResponse.experience.toInt() / maxExperienceForLevel.toInt())
+                } else {
+                    val errorResponse = response.body<ErrorResponse>()
+                    errorMessage = errorResponse.error
+                }
+            } catch (e: Exception) {
+                errorMessage = "Error: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(Color(0xFFB2EBF2), Color(0xFFE1F5FE)) // Похоже на твой фон
+                )
+            )
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.background_clouds_6),
+            contentDescription = null,
+            modifier = Modifier.fillMaxWidth(),
+            contentScale = ContentScale.Crop,
+            alignment = Alignment.TopStart
+        )
+        // Иконка профиля
+        IconButton(
+            onClick = { /* Переход к профилю */ },
+            modifier = Modifier.align(Alignment.TopStart)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_profile),
+                contentDescription = "Profile",
+                tint = Color(0xFFE91E63) // Розовый цвет
+            )
+        }
+
+        // Контент по центру
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 60.dp, bottom = 80.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            Box {
+                // Нижний текст (обводка)
+                Text(
+                    text = "Level ${level.toInt()}",
+                    fontSize = 33.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF8BC34A), // Зеленый цвет обводки
+                    style = TextStyle(
+                        drawStyle = Stroke(
+                            width = 8f // Толщина обводки
+                        )
+                    ),
+                    fontFamily = ManropeBold
+                )
+                // Верхний текст (основной белый)
+                Text(
+                    text = "Level ${level.toInt()}",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontFamily = ManropeBold
+                )
+            }
+
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Круговой прогресс
+            Box(contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(
+                    progress = { progress / 100 },
+                    modifier = Modifier.size(200.dp),
+                    color = Color(0xFF8BC34A), // Зеленый цвет
+                    strokeWidth = 17.dp,
+                        trackColor = Color(0xFFF8BBD0), // Розовый бэкграунд круга
+                    strokeCap = StrokeCap.Round,
+                )
+                Box {
+                    // Нижний текст (обводка)
+                    Text(
+                        text = "${(progress.toInt())}%",
+                        fontSize = 33.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF8BC34A), // Зеленый цвет обводки
+                        style = TextStyle(
+                            drawStyle = Stroke(
+                                width = 8f // Толщина обводки
+                            )
+                        ),
+                        fontFamily = ManropeBold
+                    )
+                    // Верхний текст (основной белый)
+                    Text(
+                        text = "${(progress.toInt())}%",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        fontFamily = ManropeBold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.size(75.dp))
+
+            // Кнопки внизу
+            Column(
+                modifier = Modifier
+                    .padding(bottom = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircleButton(text = "Lessons", iconId = R.drawable.ic_lessons) { /* переход */ }
+                    Spacer(modifier = Modifier.width(30.dp))
+                    CircleButton(
+                        text = "Statistics",
+                        iconId = R.drawable.ic_statistics
+                    ) { /* переход */ }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                CircleButton(text = "Credits", iconId = R.drawable.ic_credits) { /* переход */ }
+            }
+        }
+    }
+}
+
+@Composable
+fun CircleButton(
+    text: String,
+    iconId: Int,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(140.dp)
+            .clip(CircleShape)
+            .background(Color(0x99f5e2e9))
+            .clickable { onClick() }
+            .border(width = 2.dp, color = Color(0xFFD97BA4), shape = CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+            Icon(
+                painter = painterResource(id = iconId),
+                contentDescription = text,
+                tint = Color(0xFFE91E63),
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = text,
+                fontSize = 20.sp,
+                color = Color(0xFFE91E63),
+                fontWeight = FontWeight.Bold,
+                fontFamily = ManropeBold
+            )
+        }
+
+    }
+
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainScreenPreview() {
+    BeNativeTheme {
+        MainScreen()
+    }
+}

@@ -17,3 +17,11 @@ data class LoginRequest(
 data class ErrorResponse(
     val error: String
 )
+
+@Serializable
+data class UserResponse(
+    val id: Int,
+    val name: String,
+    val login: String,
+    val experience: Int
+)

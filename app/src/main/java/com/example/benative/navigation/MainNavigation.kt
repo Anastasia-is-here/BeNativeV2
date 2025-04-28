@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.benative.ui.screen.MainScreen
 import com.example.benative.ui.screen.SignInScreen
 import com.example.benative.ui.screen.SignUpScreen
 import com.example.benative.ui.screen.SplashScreen
@@ -30,6 +31,14 @@ fun Navigation(navController: NavHostController) {
 
         composable(route = Screen.SignUpScreen.route){
             SignUpScreen{ onNavigateTo ->
+                navController.navigate(onNavigateTo.route){
+                    launchSingleTop = true
+                }
+            }
+        }
+
+        composable(route = Screen.MainScreen.route){
+            MainScreen{ onNavigateTo ->
                 navController.navigate(onNavigateTo.route){
                     launchSingleTop = true
                 }
