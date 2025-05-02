@@ -11,4 +11,10 @@ sealed class Screen(val route: String){
     data object MainScreen : Screen("main_screen")
 
     data object LessonScreen : Screen("lesson_screen")
+
+    data class TasksScreen(val lessonId: Int) : Screen("tasks_screen/$lessonId") {
+        companion object {
+            const val ROUTE = "tasks_screen/{lessonId}"
+        }
+    }
 }

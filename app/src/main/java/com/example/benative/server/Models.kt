@@ -30,5 +30,18 @@ data class UserResponse(
 data class Lesson(
     val id: Int,
     val title: String,
-    val iconUrl: String
+    val iconUrl: String,
+    val mediaUrl: String?,
+    val articleText: String?
+)
+
+@Serializable
+data class TaskResponse(
+    val id: Int,
+    val lessonId: Int,
+    val taskText: String,
+    val correctAnswer: String,
+    val experienceReward: Int,
+    val taskType: String, // Будет сериализовано как строка ("ARTICLE", "MEDIA", "QUIZ")
+    val options: String?
 )

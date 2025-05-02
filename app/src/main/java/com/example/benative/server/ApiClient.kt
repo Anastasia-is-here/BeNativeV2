@@ -22,5 +22,6 @@ object ApiClient {
 
     const val loginUrl = "$BASE_URL/login"
     const val profileUrl = "$BASE_URL/me"
-    const val lessonsUrl = "${BASE_URL}/lessons"
+    const val lessonsUrl = "$BASE_URL/lessons"
+    fun tasksUrl(lessonId: Int) = "$BASE_URL/lessons/$lessonId/tasks"
 }
