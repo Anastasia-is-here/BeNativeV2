@@ -197,7 +197,7 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    CircleButton(text = "Lessons", iconId = R.drawable.ic_lessons) { /* переход */ }
+                    CircleButton(text = "Lessons", iconId = R.drawable.ic_lessons, onClick = { onNavigateTo(Screen.LessonScreen) })
                     Spacer(modifier = Modifier.width(30.dp))
                     CircleButton(
                         text = "Statistics",

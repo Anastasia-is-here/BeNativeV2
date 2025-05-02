@@ -25,3 +25,10 @@ data class UserResponse(
     val login: String,
     val experience: Int
 )
+
+@Serializable
+data class Lesson(
+    val id: Int,
+    val title: String,
+    val iconUrl: String
+)
