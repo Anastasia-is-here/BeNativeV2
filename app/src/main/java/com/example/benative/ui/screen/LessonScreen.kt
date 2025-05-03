@@ -26,7 +26,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.benative.R
 import com.example.benative.navigation.Screen
-import com.example.benative.server.ApiClient
+import com.example.benative.Api.ApiClient
 import com.example.benative.server.AuthManager
 import com.example.benative.server.Lesson
 import com.example.benative.ui.theme.BeNativeTheme

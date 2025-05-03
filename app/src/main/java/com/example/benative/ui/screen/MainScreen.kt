@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.benative.R
 import com.example.benative.navigation.Screen
-import com.example.benative.server.ApiClient
+import com.example.benative.Api.ApiClient
 import com.example.benative.server.AuthManager
 import com.example.benative.server.ErrorResponse
 import com.example.benative.server.UserResponse

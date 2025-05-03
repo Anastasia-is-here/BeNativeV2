@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import com.example.benative.R
 import com.example.benative.navigation.Screen
-import com.example.benative.server.ApiClient
+import com.example.benative.Api.ApiClient
 import com.example.benative.server.AuthManager
 import com.example.benative.server.ErrorResponse
 import com.example.benative.server.LoginResponse
@@ -132,38 +132,7 @@ fun SignInScreen(onNavigateTo: (Screen) -> Unit = {}) {
             shape = RoundedCornerShape(30.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 errorTextColor = Color.Red,
-                focusedBorderColor = Color("#FFFFFF".toColorInt()),
-//                        unfocusedBorderColor = Color.Gray,
-//                        disabledBorderColor = Color.LightGray,
-//                        errorBorderColor = COMPILED_CODE,
-//                        focusedLeadingIconColor = COMPILED_CODE,
-//                        unfocusedLeadingIconColor = COMPILED_CODE,
-//                        disabledLeadingIconColor = COMPILED_CODE,
-//                        errorLeadingIconColor = COMPILED_CODE,
-//                        focusedTrailingIconColor = COMPILED_CODE,
-//                        unfocusedTrailingIconColor = COMPILED_CODE,
-//                        disabledTrailingIconColor = COMPILED_CODE,
-//                        errorTrailingIconColor = COMPILED_CODE,
-//                        focusedLabelColor = COMPILED_CODE,
-//                        unfocusedLabelColor = COMPILED_CODE,
-//                        disabledLabelColor = COMPILED_CODE,
-//                        errorLabelColor = COMPILED_CODE,
-//                        focusedPlaceholderColor = COMPILED_CODE,
-//                        unfocusedPlaceholderColor = COMPILED_CODE,
-//                        disabledPlaceholderColor = COMPILED_CODE,
-//                        errorPlaceholderColor = COMPILED_CODE,
-//                        focusedSupportingTextColor = COMPILED_CODE,
-//                        unfocusedSupportingTextColor = COMPILED_CODE,
-//                        disabledSupportingTextColor = COMPILED_CODE,
-//                        errorSupportingTextColor = COMPILED_CODE,
-//                        focusedPrefixColor = COMPILED_CODE,
-//                        unfocusedPrefixColor = COMPILED_CODE,
-//                        disabledPrefixColor = COMPILED_CODE,
-//                        errorPrefixColor = COMPILED_CODE,
-//                        focusedSuffixColor = COMPILED_CODE,
-//                        unfocusedSuffixColor = COMPILED_CODE,
-//                        disabledSuffixColor = COMPILED_CODE,
-//                        errorSuffixColor = COMPILED_CODE,
+                focusedBorderColor = Color("#FFFFFF".toColorInt())
             )
 
         )

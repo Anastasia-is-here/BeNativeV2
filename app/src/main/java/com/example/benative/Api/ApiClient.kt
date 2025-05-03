@@ -1,4 +1,4 @@
-package com.example.benative.server
+package com.example.benative.Api
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
@@ -8,6 +8,7 @@ import kotlinx.serialization.json.Json
 
 object ApiClient {
     private const val BASE_URL = "http://10.0.2.2:8080/" // Для эмулятора
+
 
     val client = HttpClient(Android) {
         install(ContentNegotiation) {
