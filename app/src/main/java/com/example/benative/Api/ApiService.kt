@@ -4,9 +4,11 @@ import androidx.annotation.OptIn
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.example.benative.server.Lesson
+import com.example.benative.server.LessonCompletionRequest
 import com.example.benative.server.LoginRequest
 import com.example.benative.server.LoginResponse
 import com.example.benative.server.Task
+import com.example.benative.server.TaskResultDto
 import com.example.benative.server.User
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -42,5 +44,11 @@ object ApiService {
 
     suspend fun getLessons(token: String): List<Lesson> = ApiModule().get("lessons"){
         header(HttpHeaders.Authorization, "Bearer $token")
+    }.body()
+
+    suspend fun completeLesson(token: String, body: LessonCompletionRequest): List<TaskResultDto> =
+                                            ApiModule().post("lessons/${body.lessonId}/complete") {
+        header(HttpHeaders.Authorization, "Bearer $token")
+        setBody(body)
     }.body()
 }

@@ -45,12 +45,15 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerControlView
 import androidx.media3.ui.PlayerView
+import com.example.benative.Api.UseCase.CompleteLessonUseCase
 import com.example.benative.Api.UseCase.GetLessonUseCase
 import com.example.benative.Api.UseCase.GetTasksUseCase
 import com.example.benative.R
 import com.example.benative.server.AuthManager
 import com.example.benative.server.Lesson
+import com.example.benative.server.LessonCompletionRequest
 import com.example.benative.server.Task
+import com.example.benative.server.TaskResultDto
 import com.example.benative.server.TaskUiState
 import com.example.benative.ui.theme.ManropeBold
 import io.ktor.client.call.body
@@ -241,19 +244,57 @@ fun TaskScreen(
             }
 
             // Кнопка для перепрохождения урока находится после всех заданий
-            Button(
-                onClick = {
-                    taskStates.values.forEach { s ->
-                        s.userInput.value = ""
-                        s.isChecked.value = false
-                        s.isCorrect.value = false
-                    }
-                },
+            Row(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(16.dp)
-                    .align(Alignment.BottomCenter)
+                    .align(Alignment.BottomCenter),
+                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
             ) {
-                Text("Перепройти урок")
+                // Перепройти урок
+                Button(
+                    onClick = {
+                        // сброс состояния
+                        taskStates.values.forEach { s ->
+                            s.userInput.value = ""
+                            s.isChecked.value = false
+                            s.isCorrect.value = false
+                        }
+                    },
+                    enabled = taskStates.values.any { it.isChecked.value } // хотя бы одно проверено
+                ) {
+                    Text("Перепройти урок")
+                }
+
+                // Завершить урок
+                val canFinish = taskStates.values.any { it.isChecked.value }
+                Button(
+                    onClick = {
+                        // собираем детали
+                        val details: List<TaskResultDto> = taskStates.map { (taskId, s) ->
+                            TaskResultDto(
+                                taskId = taskId,
+                                isCompleted = s.isCorrect.value,
+                                earnedExp = if (s.isCorrect.value)
+                                    tasks.first { it.id == taskId }.experienceReward
+                                else 0
+                            )
+                        }
+                        val request = LessonCompletionRequest(lessonId = lessonId, results = details)
+                        // вызываем useCase для отправки на сервер
+
+                        coroutineScope.launch {
+                            val token = AuthManager.getToken(context).first()
+                            if (token != null) {
+                            CompleteLessonUseCase(token, request)
+                            onNavigateBack() // или перейти на MainScreen
+                                }
+                        }
+                    },
+                    enabled = canFinish
+                ) {
+                    Text("Завершить урок")
+                }
             }
         }
     } else {
@@ -275,7 +316,23 @@ fun TextInputTaskItem(
 
     Column(modifier = Modifier.padding(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(text = task.taskText, style = MaterialTheme.typography.bodyLarge, fontSize = 20.sp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = task.taskText,
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 20.sp,
+                modifier = Modifier.padding(bottom = 8.dp).weight(1f)
+            )
+            Text(
+                text = "${if (state.isChecked.value && state.isCorrect.value) task.experienceReward else 0}/${task.experienceReward}",
+                fontSize = 16.sp,
+                color = Color(0xFFE91E63)
+            )
+        }
         OutlinedTextField(
             value = state.userInput.value,
             onValueChange = { state.userInput.value = it },
@@ -305,12 +362,25 @@ fun SingleChoiceTaskItem(
     onRetry: () -> Unit
 ) {
     Column(modifier = Modifier.padding(vertical = 12.dp)) {
-        Text(
-            text = task.taskText,
-            style = MaterialTheme.typography.bodyLarge,
-            fontSize = 20.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.Top
+        ){
+            Text(
+                text = task.taskText,
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 20.sp,
+                modifier = Modifier.padding(bottom = 8.dp).weight(1f)
+            )
+            Text(
+                text = "${if (state.isChecked.value && state.isCorrect.value) task.experienceReward else 0}/${task.experienceReward}",
+                fontSize = 16.sp,
+                color = Color(0xFFE91E63),
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+
 
         val options = remember(task.options) {
             try {

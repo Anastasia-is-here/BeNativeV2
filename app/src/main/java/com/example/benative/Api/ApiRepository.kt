@@ -1,9 +1,11 @@
 package com.example.benative.Api
 
 import com.example.benative.server.Lesson
+import com.example.benative.server.LessonCompletionRequest
 import com.example.benative.server.LoginRequest
 import com.example.benative.server.LoginResponse
 import com.example.benative.server.Task
+import com.example.benative.server.TaskResultDto
 import com.example.benative.server.User
 import io.ktor.client.statement.HttpResponse
 
@@ -18,4 +20,6 @@ interface ApiRepository{
     suspend fun getUser(token: String): User
 
     suspend fun getLessons(token: String): List<Lesson>
+
+    suspend fun completeLesson(token: String, body: LessonCompletionRequest): List<TaskResultDto>
 }

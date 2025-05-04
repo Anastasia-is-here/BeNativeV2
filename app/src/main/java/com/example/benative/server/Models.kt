@@ -50,3 +50,16 @@ data class TaskUiState(
     val isCorrect: MutableState<Boolean> = mutableStateOf(false)
 )
 
+@Serializable
+data class TaskResultDto(
+    val taskId: Int,
+    val isCompleted: Boolean,
+    val earnedExp: Int
+)
+
+@Serializable
+data class LessonCompletionRequest(
+    val lessonId: Int,
+    val results: List<TaskResultDto>
+)
+
