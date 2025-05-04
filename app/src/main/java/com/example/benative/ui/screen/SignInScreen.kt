@@ -40,20 +40,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
+import com.example.benative.Api.UseCase.LogInUseCase
 import com.example.benative.R
 import com.example.benative.navigation.Screen
-import com.example.benative.Api.ApiClient
 import com.example.benative.server.AuthManager
-import com.example.benative.server.ErrorResponse
 import com.example.benative.server.LoginResponse
 import com.example.benative.ui.theme.BeNativeTheme
 import com.example.benative.ui.theme.MajorMonoDisplay
 import com.example.benative.ui.theme.ManropeBold
 import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.launch
 
@@ -161,20 +156,12 @@ fun SignInScreen(onNavigateTo: (Screen) -> Unit = {}) {
                     coroutineScope.launch {
                         try {
                             val request = com.example.benative.server.LoginRequest(login, password)
-                            val response = ApiClient.client.post(ApiClient.loginUrl) {
-                                contentType(ContentType.Application.Json)
-                                setBody(request)
-                            }
-                            if (response.status.isSuccess()) {
-                                val loginResponse = response.body<LoginResponse>()
-                                // Сохраняем токен
-                                AuthManager.saveToken(context, loginResponse.token)
-                                // Переходим на главный экран
-                                onNavigateTo(Screen.MainScreen)
-                            } else {
-                                val errorResponse = response.body<ErrorResponse>()
-                                errorMessage = errorResponse.error
-                            }
+                            val loginResponse = LogInUseCase(request)
+                            // Сохраняем токен
+                            AuthManager.saveToken(context, loginResponse.token)
+                            // Переходим на главный экран
+                            onNavigateTo(Screen.MainScreen)
+
                         } catch (e: Exception) {
                             errorMessage = "Error: ${e.message}"
                         } finally {

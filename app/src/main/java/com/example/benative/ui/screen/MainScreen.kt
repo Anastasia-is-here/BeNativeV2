@@ -1,5 +1,6 @@
 package com.example.benative.ui.screen
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -44,30 +45,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
+import com.example.benative.Api.UseCase.GetUserUseCase
 import com.example.benative.R
 import com.example.benative.navigation.Screen
-import com.example.benative.Api.ApiClient
 import com.example.benative.server.AuthManager
-import com.example.benative.server.ErrorResponse
-import com.example.benative.server.UserResponse
 import com.example.benative.ui.theme.BeNativeTheme
 import com.example.benative.ui.theme.ManropeBold
 import io.ktor.client.call.body
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+@OptIn(UnstableApi::class)
 @Composable
 fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
     // Состояние для прогресса
-    var progress by remember { mutableFloatStateOf(0f) } // Начальное значение
+    var progress by remember { mutableIntStateOf(0) } // Начальное значение
     var level by remember { mutableIntStateOf(0) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -75,27 +73,21 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             try {
-                val token = AuthManager.getToken(context)
+                val token = AuthManager.getToken(context).first()
                 if (token == null) {
                     errorMessage = "Not authenticated"
                     isLoading = false
                     return@launch
                 }
-
-                val response = ApiClient.client.get(ApiClient.profileUrl) {
-                    header(HttpHeaders.Authorization, "Bearer $token")
-                    contentType(ContentType.Application.Json)
-                }
-
-                if (response.status.isSuccess()) {
-                    val userResponse = response.body<UserResponse>()
+                try {
+                    val userResponse = GetUserUseCase(token)
                     // Преобразуем experience в процент (предположим, максимум для уровня 1 = 100)
-                    val maxExperienceForLevel = 100f
+                    val maxExperienceForLevel = 100
                     progress = (userResponse.experience % maxExperienceForLevel)
-                    level = (userResponse.experience.toInt() / maxExperienceForLevel.toInt())
-                } else {
-                    val errorResponse = response.body<ErrorResponse>()
-                    errorMessage = errorResponse.error
+                    Log.d("EXP", progress.toString() + " " + userResponse.experience.toString())
+                    level = (userResponse.experience / maxExperienceForLevel)
+                } catch (e: Exception){
+                    errorMessage = e.message
                 }
             } catch (e: Exception) {
                 errorMessage = "Error: ${e.message}"
@@ -173,7 +165,7 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
             // Круговой прогресс
             Box(contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(
-                    progress = { progress / 100 },
+                    progress = { progress.toFloat() / 100 },
                     modifier = Modifier.size(200.dp),
                     color = Color(0xFF8BC34A), // Зеленый цвет
                     strokeWidth = 17.dp,

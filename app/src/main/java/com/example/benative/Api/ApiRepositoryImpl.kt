@@ -2,28 +2,30 @@ package com.example.benative.Api
 
 import com.example.benative.server.Lesson
 import com.example.benative.server.LoginRequest
-import com.example.benative.server.TaskResponse
-import com.example.benative.server.UserResponse
+import com.example.benative.server.LoginResponse
+import com.example.benative.server.Task
+import com.example.benative.server.User
 import io.ktor.client.statement.HttpResponse
-import javax.inject.Inject
 
-class ApiRepositoryImpl @Inject constructor(
-    private val apiService: ApiService
-) : ApiRepository {
+object ApiRepositoryImpl : ApiRepository {
 
-    override suspend fun getLesson(token: String, lessonId: Int): Lesson{
-        return apiService.getLesson(token, lessonId)
+    override suspend fun getLesson(token: String, lessonId: Int): Lesson {
+        return ApiService.getLesson(token, lessonId)
     }
 
-    override suspend fun getTasks(token: String, lessonId: Int): List<TaskResponse>{
-        return apiService.getTasks(token, lessonId)
+    override suspend fun getTasks(token: String, lessonId: Int): List<Task>{
+        return ApiService.getTasks(token, lessonId)
     }
 
-    override suspend fun logIn(body: LoginRequest): HttpResponse{
-        return apiService.logIn(body)
+    override suspend fun logIn(body: LoginRequest): LoginResponse{
+        return ApiService.logIn(body)
     }
 
-    override suspend fun getUser(token: String): UserResponse{
-        return apiService.getUser(token)
+    override suspend fun getUser(token: String): User{
+        return ApiService.getUser(token)
+    }
+
+    override suspend fun getLessons(token: String): List<Lesson>{
+        return ApiService.getLessons(token)
     }
 }

@@ -1,5 +1,8 @@
 package com.example.benative.server
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -14,12 +17,7 @@ data class LoginRequest(
 )
 
 @Serializable
-data class ErrorResponse(
-    val error: String
-)
-
-@Serializable
-data class UserResponse(
+data class User(
     val id: Int,
     val name: String,
     val login: String,
@@ -36,7 +34,7 @@ data class Lesson(
 )
 
 @Serializable
-data class TaskResponse(
+data class Task(
     val id: Int,
     val lessonId: Int,
     val taskText: String,
@@ -45,3 +43,10 @@ data class TaskResponse(
     val taskType: String, // Будет сериализовано как строка ("ARTICLE", "MEDIA", "QUIZ")
     val options: String?
 )
+
+data class TaskUiState(
+    val userInput: MutableState<String> = mutableStateOf(""),
+    val isChecked: MutableState<Boolean> = mutableStateOf(false),
+    val isCorrect: MutableState<Boolean> = mutableStateOf(false)
+)
+

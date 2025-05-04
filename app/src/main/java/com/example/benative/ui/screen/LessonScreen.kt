@@ -1,16 +1,35 @@
 package com.example.benative.ui.screen
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,29 +41,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.benative.Api.ApiClient
+import com.example.benative.Api.UseCase.GetLessonsUseCase
 import com.example.benative.R
 import com.example.benative.navigation.Screen
-import com.example.benative.Api.ApiClient
 import com.example.benative.server.AuthManager
 import com.example.benative.server.Lesson
 import com.example.benative.ui.theme.BeNativeTheme
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-object LessonRepository {
-    suspend fun fetchLessons(token: String): List<Lesson> {
-        return ApiClient.client.get(ApiClient.lessonsUrl) {
-            headers {
-                append("Authorization", "Bearer $token")
-            }
-        }.body()
-    }
-}
-
+@OptIn(UnstableApi::class)
 @Composable
 fun LessonScreen(onNavigateTo: (Screen) -> Unit = {}) {
     val context = LocalContext.current
@@ -52,16 +66,18 @@ fun LessonScreen(onNavigateTo: (Screen) -> Unit = {}) {
     var lessons by remember { mutableStateOf<List<Lesson>>(emptyList()) }
 
     LaunchedEffect(Unit) {
-        val token = AuthManager.getToken(context)
+        val token = AuthManager.getToken(context).first()
         if (token != null) {
             coroutineScope.launch {
                 runCatching {
-                    LessonRepository.fetchLessons(token)
+                    GetLessonsUseCase(token)
+
                 }.onSuccess {
                     lessons = it
-                }.onFailure {
-                    // обработка ошибки (логгирование, сообщение)
+                }.onFailure { error ->
+                    Log.e("LessonLoadError", "Ошибка загрузки урока или заданий", error)
                 }
+                Log.d("Lessons", GetLessonsUseCase(token).toString())
             }
         }
     }
@@ -75,7 +91,7 @@ fun LessonScreen(onNavigateTo: (Screen) -> Unit = {}) {
                 .padding(16.dp)
                 .align(Alignment.TopStart)
                 .zIndex(1f)
-                .size(60.dp)// Размещение в левом верхнем углу
+                .size(55.dp)// Размещение в левом верхнем углу
         ) {
             Icon(
                 painter = painterResource(R.drawable.backarrow_icon),

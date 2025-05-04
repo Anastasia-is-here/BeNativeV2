@@ -2,6 +2,7 @@ package com.example.benative.Api
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.http.ContentType
@@ -28,6 +29,11 @@ object ApiModule {
                 encodeDefaults = true
                 explicitNulls = true
             })
+        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 15000
+            connectTimeoutMillis = 10000
+            socketTimeoutMillis = 15000
         }
 
     }

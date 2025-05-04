@@ -1,23 +1,38 @@
 package com.example.benative.server
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+
+// Создаём DataStore с именем "auth_prefs"
+val Context.authDataStore: DataStore<Preferences> by preferencesDataStore(name = "auth_prefs")
 
 object AuthManager {
-    private const val PREFS_NAME = "auth_prefs"
-    private const val KEY_TOKEN = "token"
+    private val KEY_TOKEN = stringPreferencesKey("token")
 
-    fun saveToken(context: Context, token: String) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_TOKEN, token).apply()
+    // Сохранение токена
+    suspend fun saveToken(context: Context, token: String) {
+        context.authDataStore.edit { preferences ->
+            preferences[KEY_TOKEN] = token
+        }
     }
 
-    fun getToken(context: Context): String? {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getString(KEY_TOKEN, null)
+    // Получение токена как Flow
+    fun getToken(context: Context): Flow<String?> {
+        return context.authDataStore.data.map { preferences ->
+            preferences[KEY_TOKEN]
+        }
     }
 
-    fun clearToken(context: Context) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().remove(KEY_TOKEN).apply()
+    // Очистка токена
+    suspend fun clearToken(context: Context) {
+        context.authDataStore.edit { preferences ->
+            preferences.remove(KEY_TOKEN)
+        }
     }
 }
