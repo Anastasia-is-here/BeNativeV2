@@ -8,7 +8,7 @@ import com.example.benative.server.LessonCompletionRequest
 import com.example.benative.server.LoginRequest
 import com.example.benative.server.LoginResponse
 import com.example.benative.server.Task
-import com.example.benative.server.TaskResultDto
+import com.example.benative.server.TaskResult
 import com.example.benative.server.User
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -46,9 +46,11 @@ object ApiService {
         header(HttpHeaders.Authorization, "Bearer $token")
     }.body()
 
-    suspend fun completeLesson(token: String, body: LessonCompletionRequest): List<TaskResultDto> =
-                                            ApiModule().post("lessons/${body.lessonId}/complete") {
-        header(HttpHeaders.Authorization, "Bearer $token")
-        setBody(body)
-    }.body()
+    suspend fun completeLesson(token: String, body: LessonCompletionRequest) {
+        ApiModule().post("lessons/${body.lessonId}/complete") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+            setBody(body)
+        }
+    }
+
 }

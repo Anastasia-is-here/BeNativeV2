@@ -53,7 +53,7 @@ import com.example.benative.server.AuthManager
 import com.example.benative.server.Lesson
 import com.example.benative.server.LessonCompletionRequest
 import com.example.benative.server.Task
-import com.example.benative.server.TaskResultDto
+import com.example.benative.server.TaskResult
 import com.example.benative.server.TaskUiState
 import com.example.benative.ui.theme.ManropeBold
 import io.ktor.client.call.body
@@ -110,6 +110,22 @@ fun AudioPlayer(uri: String) {
             }
         },
         modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+fun PdfViewer(pdfUrl: String) {
+    AndroidView(
+        factory = { context ->
+            android.webkit.WebView(context).apply {
+                settings.javaScriptEnabled = true
+                // Google Docs Viewer
+                loadUrl("https://docs.google.com/gview?embedded=true&url=$pdfUrl")
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(400.dp)
     )
 }
 
@@ -192,16 +208,23 @@ fun TaskScreen(
                     )
                 }
 
-                // Вставка видео или аудио (если есть)
-                if (!lesson!!.mediaUrl.isNullOrEmpty()) {
-                    lesson!!.mediaUrl?.let {
-                        Log.d("VideoDebug", "Playing video from URL: ${lesson!!.mediaUrl}")
-                        VideoPlayer(
-                            uri = it, modifier = Modifier
-                                .fillMaxWidth()
-                                .height(220.dp)
-                                .padding(vertical = 8.dp)
-                        )
+                lesson!!.mediaUrl?.let { media ->
+                    when {
+                        media.endsWith(".mp4", ignoreCase = true) -> {
+                            VideoPlayer(
+                                uri = media,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(220.dp)
+                                    .padding(vertical = 8.dp)
+                            )
+                        }
+                        media.endsWith(".mp3", ignoreCase = true) -> {
+                            AudioPlayer(media)
+                        }
+                        media.endsWith(".pdf", ignoreCase = true) -> {
+                            PdfViewer(media)
+                        }
                     }
                 }
 
@@ -271,8 +294,8 @@ fun TaskScreen(
                 Button(
                     onClick = {
                         // собираем детали
-                        val details: List<TaskResultDto> = taskStates.map { (taskId, s) ->
-                            TaskResultDto(
+                        val details: List<TaskResult> = taskStates.map { (taskId, s) ->
+                            TaskResult(
                                 taskId = taskId,
                                 isCompleted = s.isCorrect.value,
                                 earnedExp = if (s.isCorrect.value)

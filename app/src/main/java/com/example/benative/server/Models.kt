@@ -51,15 +51,14 @@ data class TaskUiState(
 )
 
 @Serializable
-data class TaskResultDto(
+data class LessonCompletionRequest(
+    val lessonId: Int,
+    val results: List<TaskResult>
+)
+
+@Serializable
+data class TaskResult(
     val taskId: Int,
     val isCompleted: Boolean,
     val earnedExp: Int
 )
-
-@Serializable
-data class LessonCompletionRequest(
-    val lessonId: Int,
-    val results: List<TaskResultDto>
-)
-
