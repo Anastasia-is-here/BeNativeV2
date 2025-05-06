@@ -17,4 +17,8 @@ sealed class Screen(val route: String){
             const val ROUTE = "tasks_screen/{lessonId}"
         }
     }
+
+    data object StatsScreen : Screen("stats_screen")
+
+    data object ProfileScreen : Screen("profile_screen")
 }

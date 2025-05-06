@@ -1,24 +1,25 @@
 package com.example.benative.Api
 
-import androidx.annotation.OptIn
-import androidx.media3.common.util.Log
-import androidx.media3.common.util.UnstableApi
 import com.example.benative.server.Lesson
 import com.example.benative.server.LessonCompletionRequest
 import com.example.benative.server.LoginRequest
 import com.example.benative.server.LoginResponse
+import com.example.benative.server.RegisterRequest
 import com.example.benative.server.Task
-import com.example.benative.server.TaskResult
 import com.example.benative.server.User
+import com.example.benative.server.UserStatsResponse
 import io.ktor.client.call.body
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
+import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
+import java.io.File
 
 object ApiService {
 
@@ -35,9 +36,12 @@ object ApiService {
         setBody(body)
     }.body()
 
-    @OptIn(UnstableApi::class)
+    suspend fun register(body: RegisterRequest): LoginResponse = ApiModule().post("register") {
+        contentType(ContentType.Application.Json)
+        setBody(body)
+    }.body()
+
     suspend fun getUser(token: String): User = ApiModule().get("me"){
-        Log.d("Auth", "Token: $token")
         header(HttpHeaders.Authorization, "Bearer $token")
         contentType(ContentType.Application.Json)
     }.body()
@@ -53,4 +57,22 @@ object ApiService {
         }
     }
 
+    suspend fun getUserStats(token: String): UserStatsResponse = ApiModule().get("user/stats") {
+        header(HttpHeaders.Authorization, "Bearer $token")
+        contentType(ContentType.Application.Json)
+    }.body()
+
+    suspend fun uploadAvatar(token: String, file: File) {
+        ApiModule().post("user/avatar") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+            setBody(MultiPartFormDataContent(
+                formData {
+                    append("avatar", file.readBytes(), Headers.build {
+                        append(HttpHeaders.ContentType, "image/jpeg") // Указываем тип файла
+                        append(HttpHeaders.ContentDisposition, "filename=\"${file.name}\"")
+                    })
+                }
+            ))
+        }
+    }
 }

@@ -24,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,8 +52,6 @@ import com.example.benative.navigation.Screen
 import com.example.benative.server.AuthManager
 import com.example.benative.ui.theme.BeNativeTheme
 import com.example.benative.ui.theme.ManropeBold
-import io.ktor.client.call.body
-import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -114,10 +111,12 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
             alignment = Alignment.TopStart
         )
         // Иконка профиля
-        IconButton(
-            onClick = { /* Переход к профилю */ },
-            modifier = Modifier.align(Alignment.TopStart)
-                .size(60.dp)
+        Box(
+            modifier = Modifier
+                .padding(16.dp, 30.dp, 16.dp, 16.dp)
+                .align(Alignment.TopStart)
+                .size(55.dp)
+                .clickable(onClick = { onNavigateTo(Screen.ProfileScreen)})
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_profile),
@@ -131,15 +130,15 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 60.dp, bottom = 80.dp),
+                .padding(top = 80.dp, bottom = 80.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            Box {
+            Box(contentAlignment = Alignment.Center){
                 // Нижний текст (обводка)
                 Text(
                     text = "Level ${level.toInt()}",
-                    fontSize = 33.sp,
+                    fontSize = 32.5.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF8BC34A), // Зеленый цвет обводки
                     style = TextStyle(
@@ -172,11 +171,11 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
                         trackColor = Color(0xFFF8BBD0), // Розовый бэкграунд круга
                     strokeCap = StrokeCap.Round,
                 )
-                Box {
+                Box(contentAlignment = Alignment.Center){
                     // Нижний текст (обводка)
                     Text(
                         text = "${(progress.toInt())}%",
-                        fontSize = 33.sp,
+                        fontSize = 32.5.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF8BC34A), // Зеленый цвет обводки
                         style = TextStyle(
@@ -209,12 +208,16 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    CircleButton(text = "Lessons", iconId = R.drawable.ic_lessons, onClick = { onNavigateTo(Screen.LessonScreen) })
+                    CircleButton(
+                        text = "Lessons",
+                        iconId = R.drawable.ic_lessons,
+                        onClick = { onNavigateTo(Screen.LessonScreen) })
                     Spacer(modifier = Modifier.width(30.dp))
                     CircleButton(
                         text = "Statistics",
-                        iconId = R.drawable.ic_statistics
-                    ) { /* переход */ }
+                        iconId = R.drawable.ic_statistics,
+                        onClick = { onNavigateTo(Screen.StatsScreen) }
+                    )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 CircleButton(text = "Credits", iconId = R.drawable.ic_credits) { /* переход */ }

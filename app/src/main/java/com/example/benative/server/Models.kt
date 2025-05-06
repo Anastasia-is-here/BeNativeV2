@@ -2,7 +2,6 @@ package com.example.benative.server
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -21,7 +20,8 @@ data class User(
     val id: Int,
     val name: String,
     val login: String,
-    val experience: Int
+    val experience: Int,
+    val avatar: String?
 )
 
 @Serializable
@@ -62,3 +62,19 @@ data class TaskResult(
     val isCompleted: Boolean,
     val earnedExp: Int
 )
+
+@Serializable
+data class UserStatsResponse(
+    val completedLessons: Int,
+    val averageProgress: Int,
+    val completedTasks: Int,
+    val totalExperience: Int
+)
+
+@Serializable
+data class RegisterRequest(
+    val login: String,
+    val password: String,
+    val name: String
+)
+

@@ -44,12 +44,9 @@ import com.example.benative.Api.UseCase.LogInUseCase
 import com.example.benative.R
 import com.example.benative.navigation.Screen
 import com.example.benative.server.AuthManager
-import com.example.benative.server.LoginResponse
 import com.example.benative.ui.theme.BeNativeTheme
 import com.example.benative.ui.theme.MajorMonoDisplay
 import com.example.benative.ui.theme.ManropeBold
-import io.ktor.client.call.body
-import io.ktor.http.isSuccess
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

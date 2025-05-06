@@ -8,9 +8,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.benative.ui.screen.LessonScreen
 import com.example.benative.ui.screen.MainScreen
+import com.example.benative.ui.screen.ProfileScreen
 import com.example.benative.ui.screen.SignInScreen
 import com.example.benative.ui.screen.SignUpScreen
 import com.example.benative.ui.screen.SplashScreen
+import com.example.benative.ui.screen.StatsScreen
 import com.example.benative.ui.screen.TaskScreen
 
 @Composable
@@ -34,8 +36,10 @@ fun Navigation(navController: NavHostController) {
         }
 
         composable(route = Screen.SignUpScreen.route){
-            SignUpScreen{ onNavigateTo ->
-                navController.navigate(onNavigateTo.route){
+            SignUpScreen(
+                onNavigateBack = { navController.popBackStack() }
+            ) { onNavigateTo ->
+                navController.navigate(onNavigateTo.route) {
                     launchSingleTop = true
                 }
             }
@@ -68,6 +72,19 @@ fun Navigation(navController: NavHostController) {
                 onTaskChecked = { task, isCorrect ->
                     // Обработка проверки
                 }
+            )
+        }
+
+        composable(route = Screen.StatsScreen.route){
+            StatsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = Screen.ProfileScreen.route){
+            ProfileScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onLogoutClick = {}
             )
         }
     }

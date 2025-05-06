@@ -13,6 +13,9 @@ import kotlinx.serialization.json.Json
 
 object ApiModule {
     private val client = HttpClient(CIO) {
+
+        expectSuccess = false
+
         defaultRequest {
             url {
                 protocol = URLProtocol.HTTP

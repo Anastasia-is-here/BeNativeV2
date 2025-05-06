@@ -2,6 +2,7 @@ package com.example.benative.ui.screen
 
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,8 +56,6 @@ import com.example.benative.server.LessonCompletionRequest
 import com.example.benative.server.Task
 import com.example.benative.server.TaskResult
 import com.example.benative.server.TaskUiState
-import com.example.benative.ui.theme.ManropeBold
-import io.ktor.client.call.body
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -175,12 +174,12 @@ fun TaskScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
+                        .padding(bottom = 16.dp, top = 30.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
-                        onClick = onNavigateBack,
+                    Box(
                         modifier = Modifier.size(55.dp)
+                            .clickable(onClick = onNavigateBack)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.backarrow_icon),

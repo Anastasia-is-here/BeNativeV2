@@ -45,16 +45,12 @@ import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.benative.Api.ApiClient
 import com.example.benative.Api.UseCase.GetLessonsUseCase
 import com.example.benative.R
 import com.example.benative.navigation.Screen
 import com.example.benative.server.AuthManager
 import com.example.benative.server.Lesson
 import com.example.benative.ui.theme.BeNativeTheme
-import io.ktor.client.call.body
-import io.ktor.client.request.get
-import io.ktor.client.request.headers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -85,13 +81,13 @@ fun LessonScreen(onNavigateTo: (Screen) -> Unit = {}) {
     Box(
         modifier = Modifier.background(Color(0xFFB0E0E6)).fillMaxSize()
     ) {
-        IconButton(
-            onClick = { onNavigateTo(Screen.MainScreen) }, // Перенаправление на MainScreen
+        Box(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(16.dp, 30.dp, 16.dp, 16.dp)
                 .align(Alignment.TopStart)
+                .size(55.dp)
                 .zIndex(1f)
-                .size(55.dp)// Размещение в левом верхнем углу
+                .clickable(onClick = { onNavigateTo(Screen.MainScreen) })
         ) {
             Icon(
                 painter = painterResource(R.drawable.backarrow_icon),
