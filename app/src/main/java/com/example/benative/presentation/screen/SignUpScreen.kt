@@ -42,6 +42,7 @@ import com.example.benative.R
 import com.example.benative.domain.RegisterRequest
 import com.example.benative.presentation.navigation.Screen
 import com.example.benative.data.AuthManager
+import com.example.benative.data.KtorHttpException
 import com.example.benative.presentation.theme.BeNativeTheme
 import com.example.benative.presentation.theme.MajorMonoDisplay
 import com.example.benative.presentation.theme.ManropeBold
@@ -237,14 +238,28 @@ fun SignUpScreen(onNavigateBack: () -> Unit,
                             val request = RegisterRequest(
                                 login = login,
                                 password = password,
-                                name = name // Или другое имя, если есть отдельное поле
+                                name = name
                             )
-                            val response = RegisterUseCase(request)
+                            val registerResponse = RegisterUseCase(request)
 
+                        registerResponse.onSuccess { response ->
                             AuthManager.saveToken(context, response.token)
-                            // переход на главный экран или авторизацию
+                            // Переходим на главный экран
                             onNavigateTo(Screen.MainScreen)
-
+                        }.onFailure { error ->
+                            when (error) {
+                                is KtorHttpException -> {
+                                    if (error.code == 409) {
+                                        errorMessage = "User with this login already exists"
+                                    } else {
+                                        errorMessage = "Error ${error.code}: ${error.message}"
+                                    }
+                                }
+                                else -> {
+                                    errorMessage = "Something went wrong: ${error.localizedMessage}"
+                                }
+                            }
+                        }
 
                     }
                 },

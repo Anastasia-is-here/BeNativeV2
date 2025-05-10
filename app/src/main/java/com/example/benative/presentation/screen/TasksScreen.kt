@@ -1,6 +1,11 @@
 package com.example.benative.presentation.screen
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.pdf.PdfRenderer
+import android.os.ParcelFileDescriptor
 import androidx.annotation.OptIn
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,8 +15,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -25,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,7 +40,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -55,9 +65,20 @@ import com.example.benative.domain.LessonCompletionRequest
 import com.example.benative.domain.Task
 import com.example.benative.domain.TaskResult
 import com.example.benative.domain.TaskUiState
+import com.github.barteksc.pdfviewer.PDFView
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
+import androidx.core.graphics.createBitmap
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.withTimeout
+import java.io.BufferedInputStream
+import java.io.FileOutputStream
 
 @Composable
 fun VideoPlayer(uri: String, modifier: Modifier = Modifier) {
@@ -67,6 +88,7 @@ fun VideoPlayer(uri: String, modifier: Modifier = Modifier) {
             setMediaItem(MediaItem.fromUri(uri))
             prepare()
             playWhenReady = false
+            volume = 1f
         }
     }
 
@@ -103,8 +125,9 @@ fun AudioPlayer(uri: String) {
 
     AndroidView(
         factory = {
-            PlayerControlView(context).apply {
+            PlayerView(context).apply {
                 player = exoPlayer
+                useController = true
             }
         },
         modifier = Modifier.fillMaxWidth()
@@ -112,19 +135,136 @@ fun AudioPlayer(uri: String) {
 }
 
 @Composable
-fun PdfViewer(pdfUrl: String) {
-    AndroidView(
-        factory = { context ->
-            android.webkit.WebView(context).apply {
-                settings.javaScriptEnabled = true
-                // Google Docs Viewer
-                loadUrl("https://docs.google.com/gview?embedded=true&url=$pdfUrl")
-            }
-        },
-        modifier = Modifier
+fun PdfViewerFromUrl(
+    pdfUrl: String,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    var isLoading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var renderer by remember { mutableStateOf<PdfRenderer?>(null) }
+    var pfd by remember { mutableStateOf<ParcelFileDescriptor?>(null) }
+    var pageCount by remember { mutableIntStateOf(0) }
+    var currentPage by remember { mutableIntStateOf(0) }
+
+    // Загружаем и инициализируем renderer единожды при изменении URL
+    LaunchedEffect(pdfUrl) {
+        isLoading = true
+        error = null
+        try {
+            val (r, f, descriptor) = loadRendererFromUrl(context, pdfUrl)
+            renderer = r
+            pfd = descriptor
+            pageCount = r.pageCount
+        } catch (t: Throwable) {
+            error = "Ошибка: ${t.message}"
+        } finally {
+            isLoading = false
+        }
+    }
+
+    // Закрываем PdfRenderer и PFD только когда сам Composable уходит
+    DisposableEffect(pdfUrl) {
+        onDispose {
+            renderer?.close()
+            pfd?.close()
+        }
+    }
+
+    Box(
+        modifier = modifier
             .fillMaxWidth()
             .height(400.dp)
-    )
+            .background(Color.LightGray)
+            .padding(8.dp)
+    ) {
+        when {
+            isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            error != null -> Text(error!!, color = Color.Red, modifier = Modifier.align(Alignment.Center))
+            renderer == null || pageCount == 0 -> Text("Нет страниц", modifier = Modifier.align(Alignment.Center))
+            else -> Column(Modifier.fillMaxSize()) {
+                PdfPage(
+                    pdfRenderer = renderer!!,
+                    pageIndex = currentPage,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clipToBounds()
+                )
+                Row(
+                    Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(onClick = { if (currentPage > 0) currentPage-- }, enabled = currentPage > 0) { Text("<") }
+                    Text("${currentPage + 1} / $pageCount", modifier = Modifier.align(Alignment.CenterVertically))
+                    Button(onClick = { if (currentPage < pageCount - 1) currentPage++ }, enabled = currentPage < pageCount - 1) { Text(">") }
+                }
+            }
+        }
+    }
+}
+
+suspend fun loadRendererFromUrl(
+    context: Context,
+    pdfUrl: String
+): Triple<PdfRenderer, File, ParcelFileDescriptor> = withContext(Dispatchers.IO) {
+    withTimeout(15_000) {
+        val connection = URL(pdfUrl).openConnection() as HttpURLConnection
+        connection.connectTimeout = 10_000
+        connection.readTimeout = 10_000
+        connection.connect()
+        connection.inputStream.use { input ->
+            val temp = File.createTempFile("tmp", ".pdf", context.cacheDir)
+            temp.outputStream().use { output ->
+                input.copyTo(output)
+            }
+            val pfd = ParcelFileDescriptor.open(temp, ParcelFileDescriptor.MODE_READ_ONLY)
+            val renderer = PdfRenderer(pfd)
+            Triple(renderer, temp, pfd)
+        }
+    }
+}
+
+@OptIn(UnstableApi::class)
+@Composable
+fun PdfPage(pdfRenderer: PdfRenderer, pageIndex: Int, modifier: Modifier = Modifier) {
+    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+
+    // Проверяем, жив ли renderer
+    val rendererAlive = remember(pdfRenderer) {
+        try {
+            pdfRenderer.pageCount
+            true
+        } catch (_: IllegalStateException) {
+            false
+        }
+    }
+
+    LaunchedEffect(pageIndex, rendererAlive) {
+        if (!rendererAlive) return@LaunchedEffect
+
+        try {
+            withContext(Dispatchers.IO) {
+                val page = pdfRenderer.openPage(pageIndex)
+                val renderedBitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
+                page.render(renderedBitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                page.close()
+                bitmap = renderedBitmap
+            }
+        } catch (e: IllegalStateException) {
+            // PdfRenderer уже закрыт — просто выходим
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    if (bitmap != null) {
+        Image(bitmap = bitmap!!.asImageBitmap(), contentDescription = null, modifier = modifier)
+    } else {
+        Box(modifier = modifier, contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+    }
 }
 
 @OptIn(UnstableApi::class)
@@ -221,7 +361,7 @@ fun TaskScreen(
                             AudioPlayer(media)
                         }
                         media.endsWith(".pdf", ignoreCase = true) -> {
-                            PdfViewer(media)
+                            PdfViewerFromUrl(media)
                         }
                     }
                 }

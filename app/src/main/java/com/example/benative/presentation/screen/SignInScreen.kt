@@ -45,6 +45,7 @@ import com.example.benative.R
 import com.example.benative.domain.LoginRequest
 import com.example.benative.presentation.navigation.Screen
 import com.example.benative.data.AuthManager
+import com.example.benative.data.KtorHttpException
 import com.example.benative.presentation.theme.BeNativeTheme
 import com.example.benative.presentation.theme.MajorMonoDisplay
 import com.example.benative.presentation.theme.ManropeBold
@@ -157,10 +158,25 @@ fun SignInScreen(onNavigateTo: (Screen) -> Unit = {}) {
                             val request = LoginRequest(login, password)
                             val loginResponse = LogInUseCase(request)
                             // Сохраняем токен
-                            AuthManager.saveToken(context, loginResponse.token)
-                            // Переходим на главный экран
-                            onNavigateTo(Screen.MainScreen)
 
+                            loginResponse.onSuccess { response ->
+                                AuthManager.saveToken(context, response.token)
+                                // Переходим на главный экран
+                                onNavigateTo(Screen.MainScreen)
+                            }.onFailure { error ->
+                                when (error) {
+                                    is KtorHttpException -> {
+                                        if (error.code == 401) {
+                                            errorMessage = "Invalid login or password"
+                                        } else {
+                                            errorMessage = "Error ${error.code}: ${error.message}"
+                                        }
+                                    }
+                                    else -> {
+                                        errorMessage = "Something went wrong: ${error.localizedMessage}"
+                                    }
+                                }
+                            }
                         } catch (e: Exception) {
                             errorMessage = "Error: ${e.message}"
                         } finally {

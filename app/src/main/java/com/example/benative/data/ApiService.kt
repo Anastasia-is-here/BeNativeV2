@@ -20,6 +20,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
+import kotlinx.serialization.json.Json
 import java.io.File
 
 object ApiService {
@@ -32,15 +33,23 @@ object ApiService {
         header(HttpHeaders.Authorization, "Bearer $token")
     }.body()
 
-    suspend fun logIn(body: LoginRequest): LoginResponse = ApiModule().post("login"){
-        contentType(ContentType.Application.Json)
-        setBody(body)
-    }.body()
+    suspend fun logIn(body: LoginRequest): LoginResponse {
+        val rawJson = ApiModule().post("login"){
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }.stringOrException()
 
-    suspend fun register(body: RegisterRequest): LoginResponse = ApiModule().post("register") {
-        contentType(ContentType.Application.Json)
-        setBody(body)
-    }.body()
+        return Json.decodeFromString(rawJson)
+    }
+
+    suspend fun register(body: RegisterRequest): LoginResponse {
+        val rawJson = ApiModule().post("register") {
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }.stringOrException()
+
+        return Json.decodeFromString(rawJson)
+    }
 
     suspend fun getUser(token: String): User = ApiModule().get("me"){
         header(HttpHeaders.Authorization, "Bearer $token")

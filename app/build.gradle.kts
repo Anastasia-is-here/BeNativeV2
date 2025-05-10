@@ -84,6 +84,7 @@ dependencies {
     kapt(libs.hilt.compiler)
 
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.mhiew.android.pdf.viewer)
 
 
     implementation(libs.coil.compose)
