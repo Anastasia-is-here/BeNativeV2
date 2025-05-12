@@ -42,6 +42,7 @@ import com.example.benative.domain.usecase.GetUserUseCase
 import com.example.benative.domain.usecase.UploadAvatarUseCase
 import com.example.benative.R
 import com.example.benative.data.AuthManager
+import com.example.benative.domain.usecase.DeleteAvatarUseCase
 import com.example.benative.domain.usecase.UpdateUserNameUseCase
 import com.example.benative.presentation.navigation.Screen
 import com.example.benative.presentation.theme.ManropeBold
@@ -80,6 +81,9 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
     var newName by remember { mutableStateOf("") }
     var isEditingName by remember { mutableStateOf(false) }
 
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -98,7 +102,7 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
                         avatarUrl = GetUserUseCase(token).avatar // получаем новую ссылку
                         Log.d("AvatarUpload", "New avatar URL: $avatarUrl")
                     } catch (e: Exception) {
-                        errorMessage = "Ошибка загрузки аватара"
+                        errorMessage = "Avatar loading error"
                     }finally {
                         isUploading = false
                     }
@@ -125,7 +129,7 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
                 newName = username
 
             } catch (e: Exception) {
-                errorMessage = "Ошибка получения данных"
+                errorMessage = "Error"
             }
         }
     }
@@ -160,12 +164,7 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
                 .align(Alignment.TopEnd)
                 .padding(16.dp, 30.dp, 16.dp, 16.dp)
                 .size(55.dp)
-                .clickable(onClick = {
-                    coroutineScope.launch {
-                        AuthManager.clearToken(context) // удаляем токен
-                        onNavigateTo(Screen.SignInScreen) // возвращаем на экран авторизации
-                    }
-                })
+                .clickable{ showLogoutDialog = true }
         ) {
             Icon(
                 painter = painterResource(R.drawable.logout_icon),
@@ -175,7 +174,55 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
             )
         }
 
+// Confirmation dialog
+        if (showLogoutDialog) {
+            AlertDialog(
+                onDismissRequest = { showLogoutDialog = false },
+                title = { Text("Confirmation") },
+                text = { Text("Are you sure you want to log out?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showLogoutDialog = false
+                        coroutineScope.launch {
+                            AuthManager.clearToken(context)
+                            onNavigateTo(Screen.SignInScreen)
+                        }
+                    }) {
+                        Text("Log out")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showLogoutDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
 
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text("Delete avatar") },
+                text = { Text("Are you sure you want to delete your avatar?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDeleteDialog = false
+                        coroutineScope.launch {
+                            val token = AuthManager.getToken(context).first()
+                            if (token != null) {
+                                // Сбрасываем на дефолтный URL
+                                DeleteAvatarUseCase(token)
+                                avatarUrl = null // чтобы AsyncImage пересоздался
+                                avatarUrl = GetUserUseCase(token).avatar // получаем новую ссылку
+                            }
+                        }
+                    }) { Text("Delete") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                }
+            )
+        }
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -223,7 +270,7 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
                     OutlinedTextField(
                         value = newName,
                         onValueChange = { newName = it },
-                        label = { Text("Новое имя") },
+                        label = { Text("New name") },
                         singleLine = true,
                         textStyle = TextStyle(fontSize = 24.sp),
                         modifier = Modifier
@@ -237,7 +284,7 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_cancel), // добавь иконку крестика в drawable
-                            contentDescription = "Отменить",
+                            contentDescription = "Cancel",
                             tint = Color(0xFFE91E63)
                         )
                     }
@@ -265,55 +312,74 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
 
 
             Spacer(modifier = Modifier.height(32.dp))
-            Button(
-                onClick = { imagePickerLauncher.launch("image/*") },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf5e2e9)),
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = Color(0xFFE91E63)
-                )
-            ) {
-                Text(
-                    "Change avatar",
-                    color = Color(0xFFE91E63),
-                    fontFamily = ManropeBold,
-                    fontSize = 20.sp)
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { imagePickerLauncher.launch("image/*") },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf5e2e9)),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = Color(0xFFE91E63)
+                    ),
+                    modifier = Modifier.width(200.dp)
+                ) {
+                    Text(
+                        "Change avatar",
+                        color = Color(0xFFE91E63),
+                        fontFamily = ManropeBold,
+                        fontSize = 20.sp)
+                }
 
-            Button(
-                onClick = {
-                    if (isEditingName) {
-                        // сохранить новое имя
-                        coroutineScope.launch {
-                            try {
-                                val token = AuthManager.getToken(context).first()
-                                if (token != null) {
-                                    UpdateUserNameUseCase(token, newName)
-                                } // реализация уже обсуждалась
-                                username = newName
-                                isEditingName = false
-                            } catch (e: Exception) {
-                                errorMessage = "Не удалось обновить имя"
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {showDeleteDialog = true},
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf5e2e9)),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = Color(0xFFE91E63)
+                    ),
+                    modifier = Modifier.width(200.dp)
+                ) {
+                    Text(
+                        "Delete avatar",
+                        color = Color(0xFFE91E63),
+                        fontFamily = ManropeBold,
+                        fontSize = 20.sp)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+                        if (isEditingName) {
+                            // сохранить новое имя
+                            coroutineScope.launch {
+                                try {
+                                    val token = AuthManager.getToken(context).first()
+                                    if (token != null) {
+                                        UpdateUserNameUseCase(token, newName)
+                                    } // реализация уже обсуждалась
+                                    username = newName
+                                    isEditingName = false
+                                } catch (e: Exception) {
+                                    errorMessage = "Failed to upload new name"
+                                }
                             }
+                        } else {
+                            isEditingName = true
                         }
-                    } else {
-                        isEditingName = true
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf5e2e9)),
-                border = BorderStroke(1.dp, Color(0xFFE91E63))
-            ) {
-                Text(
-                    if (isEditingName) "Save" else "Change name",
-                    color = Color(0xFFE91E63),
-                    fontFamily = ManropeBold,
-                    fontSize = 20.sp
-                )
-            }
-
-
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf5e2e9)),
+                    border = BorderStroke(1.dp, Color(0xFFE91E63)),
+                    modifier = Modifier.width(200.dp)
+                ) {
+                    Text(
+                        if (isEditingName) "Save" else "Change name",
+                        color = Color(0xFFE91E63),
+                        fontFamily = ManropeBold,
+                        fontSize = 20.sp
+                    )
+                }
 
         }
     }

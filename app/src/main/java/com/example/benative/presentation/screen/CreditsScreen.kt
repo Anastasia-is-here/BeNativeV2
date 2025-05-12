@@ -151,13 +151,13 @@ fun CreditsScreen(onNavigateBack: () -> Unit) {
 
 
                         Text(
-                            text = "Content advice:",
+                            text = "Sources:",
                             fontSize = 18.sp,
                             color = Color.White,
                             fontFamily = ManropeBold
                         )
                         Text(
-                            text = "Kiyuk Mariya Valerievna",
+                            text = "",
                             fontSize = 24.sp,
                             color = Color(0xFFE91E63),
                             fontWeight = FontWeight.Bold,

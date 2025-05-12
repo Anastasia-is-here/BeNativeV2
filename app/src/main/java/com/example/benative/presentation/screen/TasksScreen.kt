@@ -27,6 +27,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -181,7 +182,7 @@ fun PdfViewerFromUrl(
         when {
             isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             error != null -> Text(error!!, color = Color.Red, modifier = Modifier.align(Alignment.Center))
-            renderer == null || pageCount == 0 -> Text("Нет страниц", modifier = Modifier.align(Alignment.Center))
+            renderer == null || pageCount == 0 -> Text("No pages", modifier = Modifier.align(Alignment.Center))
             else -> Column(Modifier.fillMaxSize()) {
                 PdfPage(
                     pdfRenderer = renderer!!,
@@ -294,21 +295,71 @@ fun TaskScreen(
 
                 forceReset = false
             }.onFailure { error ->
-                Log.e("LessonLoadError", "Ошибка загрузки урока или заданий", error)
+                Log.e("LessonLoadError", "Task or lesson loading error", error)
             }
         }
     }
 
     if (lesson != null) {
-        Box(
-            modifier = Modifier.background(Color(0xFFB3E5FC)).fillMaxSize()
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp)
-            ) {
+
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            bottomBar = {
+                // Кнопка для перепрохождения урока находится после всех заданий
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
+                ) {
+                    // Перепройти урок
+                    Button(
+                        onClick = {
+                            // сброс состояния
+                            taskStates.values.forEach { s ->
+                                s.userInput.value = ""
+                                s.isChecked.value = false
+                                s.isCorrect.value = false
+                            }
+                        },
+                        enabled = taskStates.values.any { it.isChecked.value } // хотя бы одно проверено
+                    ) {
+                        Text("Restart")
+                    }
+
+                    // Завершить урок
+                    val canFinish = taskStates.values.any { it.isChecked.value }
+                    Button(
+                        onClick = {
+                            // собираем детали
+                            val details: List<TaskResult> = taskStates.map { (taskId, s) ->
+                                TaskResult(
+                                    taskId = taskId,
+                                    isCompleted = s.isCorrect.value,
+                                    earnedExp = if (s.isCorrect.value)
+                                        tasks.first { it.id == taskId }.experienceReward
+                                    else 0
+                                )
+                            }
+                            val request =
+                                LessonCompletionRequest(lessonId = lessonId, results = details)
+                            // вызываем useCase для отправки на сервер
+
+                            coroutineScope.launch {
+                                val token = AuthManager.getToken(context).first()
+                                if (token != null) {
+                                    CompleteLessonUseCase(token, request)
+                                    onNavigateBack() // или перейти на MainScreen
+                                }
+                            }
+                        },
+                        enabled = canFinish
+                    ) {
+                        Text("Finish")
+                    }
+                }
+            },
+            topBar = {
                 // Заголовок с кнопкой "назад"
                 Row(
                     modifier = Modifier
@@ -332,17 +383,28 @@ fun TaskScreen(
                         text = lesson!!.title,
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(start = 22.dp),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
                     )
                 }
-
+            }
+        ) { innerPadding ->
+            // основной прокручиваемый контент, с учётом отступа снизу
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)         // сюда Scaffold подставит bottomBar height
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
+            ) {
                 // Текст урока
                 lesson!!.articleText?.let {
                     Text(
                         text = it, // Здесь можно добавить текст урока
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(bottom = 16.dp),
-                        fontSize = 20.sp
+                        fontSize = 20.sp,
+                        color = Color.Black
                     )
                 }
 
@@ -402,60 +464,7 @@ fun TaskScreen(
                         }
                     }
                 }
-            }
 
-            // Кнопка для перепрохождения урока находится после всех заданий
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .align(Alignment.BottomCenter),
-                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
-            ) {
-                // Перепройти урок
-                Button(
-                    onClick = {
-                        // сброс состояния
-                        taskStates.values.forEach { s ->
-                            s.userInput.value = ""
-                            s.isChecked.value = false
-                            s.isCorrect.value = false
-                        }
-                    },
-                    enabled = taskStates.values.any { it.isChecked.value } // хотя бы одно проверено
-                ) {
-                    Text("Перепройти урок")
-                }
-
-                // Завершить урок
-                val canFinish = taskStates.values.any { it.isChecked.value }
-                Button(
-                    onClick = {
-                        // собираем детали
-                        val details: List<TaskResult> = taskStates.map { (taskId, s) ->
-                            TaskResult(
-                                taskId = taskId,
-                                isCompleted = s.isCorrect.value,
-                                earnedExp = if (s.isCorrect.value)
-                                    tasks.first { it.id == taskId }.experienceReward
-                                else 0
-                            )
-                        }
-                        val request = LessonCompletionRequest(lessonId = lessonId, results = details)
-                        // вызываем useCase для отправки на сервер
-
-                        coroutineScope.launch {
-                            val token = AuthManager.getToken(context).first()
-                            if (token != null) {
-                            CompleteLessonUseCase(token, request)
-                            onNavigateBack() // или перейти на MainScreen
-                                }
-                        }
-                    },
-                    enabled = canFinish
-                ) {
-                    Text("Завершить урок")
-                }
             }
         }
     } else {
@@ -486,7 +495,8 @@ fun TextInputTaskItem(
                 text = task.taskText,
                 style = MaterialTheme.typography.bodyLarge,
                 fontSize = 20.sp,
-                modifier = Modifier.padding(bottom = 8.dp).weight(1f)
+                modifier = Modifier.padding(bottom = 8.dp).weight(1f),
+                color = Color.Black
             )
             Text(
                 text = "${if (state.isChecked.value && state.isCorrect.value) task.experienceReward else 0}/${task.experienceReward}",
@@ -504,11 +514,11 @@ fun TextInputTaskItem(
             onClick = onCheck,
             enabled = !state.isChecked.value
         ) {
-            Text("Проверить")
+            Text("Check")
         }
         if (state.isChecked.value) {
             Text(
-                text = if (state.isCorrect.value) "Верно!" else "Неверно",
+                text = if (state.isCorrect.value) "Correct!" else "Wrong :(",
                 color = if (state.isCorrect.value) Color.Green else Color.Red
             )
         }
@@ -532,7 +542,8 @@ fun SingleChoiceTaskItem(
                 text = task.taskText,
                 style = MaterialTheme.typography.bodyLarge,
                 fontSize = 20.sp,
-                modifier = Modifier.padding(bottom = 8.dp).weight(1f)
+                modifier = Modifier.padding(bottom = 8.dp).weight(1f),
+                color = Color.Black
             )
             Text(
                 text = "${if (state.isChecked.value && state.isCorrect.value) task.experienceReward else 0}/${task.experienceReward}",
@@ -586,7 +597,7 @@ fun SingleChoiceTaskItem(
 
         if (state.isChecked.value) {
             Text(
-                text = if (state.isCorrect.value) "Верно!" else "Неверно",
+                text = if (state.isCorrect.value) "Correct!" else "Wrong :(",
                 color = if (state.isCorrect.value) Color.Green else Color.Red,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 8.dp)

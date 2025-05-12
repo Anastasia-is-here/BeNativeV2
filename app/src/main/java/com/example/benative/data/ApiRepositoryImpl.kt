@@ -48,6 +48,10 @@ object ApiRepositoryImpl : ApiRepository {
         return ApiService.uploadAvatar(token, file)
     }
 
+    override suspend fun deleteAvatar(token: String) {
+        return ApiService.deleteAvatar(token)
+    }
+
     override suspend fun updateUserName(token: String, newName: String) {
         return ApiService.updateUserName(token, newName)
     }

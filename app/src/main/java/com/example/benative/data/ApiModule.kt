@@ -19,7 +19,7 @@ object ApiModule {
         defaultRequest {
             url {
                 protocol = URLProtocol.HTTP
-                host = "10.0.2.2"
+                host = "31.207.75.8"
                 port = 8080
 
             }
@@ -34,9 +34,9 @@ object ApiModule {
             })
         }
         install(HttpTimeout) {
-            requestTimeoutMillis = 15000
-            connectTimeoutMillis = 10000
-            socketTimeoutMillis = 15000
+            requestTimeoutMillis = 150000
+            connectTimeoutMillis = 100000
+            socketTimeoutMillis = 150000
         }
 
     }

@@ -30,5 +30,7 @@ interface ApiRepository{
 
     suspend fun uploadAvatar(token: String, file: File)
 
+    suspend fun deleteAvatar(token: String)
+
     suspend fun updateUserName(token: String, newName: String)
 }

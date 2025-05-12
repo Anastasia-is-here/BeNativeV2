@@ -9,6 +9,7 @@ import com.example.benative.domain.Task
 import com.example.benative.domain.User
 import com.example.benative.domain.UserStatsResponse
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
@@ -83,6 +84,12 @@ object ApiService {
                     })
                 }
             ))
+        }
+    }
+
+    suspend fun deleteAvatar(token: String){
+        ApiModule().delete("user/avatar"){
+            header(HttpHeaders.Authorization, "Bearer $token")
         }
     }
 
