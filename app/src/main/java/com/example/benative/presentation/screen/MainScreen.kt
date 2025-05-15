@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,6 +42,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.Log
@@ -93,11 +96,20 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
         }
     }
 
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFB3E5FC))
     ) {
+        val screenWidth = LocalContext.current.resources.displayMetrics.widthPixels / LocalContext.current.resources.displayMetrics.density
+        val screenHeight = maxHeight
+        val circleSize = screenWidth * 0.35f
+        val buttonSize = (screenWidth * 0.35f).dp
+        val iconSize = (screenWidth * 0.1f).dp
+        val textSize = screenWidth.coerceAtMost(360f) / 12
+        val progressSize = (screenWidth * 0.55).dp
+
+        // фон и иконка
         Image(
             painter = painterResource(id = R.drawable.background_clouds_6),
             contentDescription = null,
@@ -105,13 +117,13 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
             contentScale = ContentScale.Crop,
             alignment = Alignment.TopStart
         )
-        // Иконка профиля
+
         Box(
             modifier = Modifier
-                .padding(16.dp, 30.dp, 16.dp, 16.dp)
+                .padding(start = 16.dp, top = 30.dp)
                 .align(Alignment.TopStart)
                 .size(55.dp)
-                .clickable(onClick = { onNavigateTo(Screen.ProfileScreen)})
+                .clickable { onNavigateTo(Screen.ProfileScreen) }
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_profile),
@@ -121,69 +133,56 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
             )
         }
 
-        // Контент по центру
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 80.dp, bottom = 80.dp),
+                .padding(horizontal = 16.dp, vertical = 80.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            Box(contentAlignment = Alignment.Center){
-                // Нижний текст (обводка)
+            // Level
+            Box(contentAlignment = Alignment.Center) {
                 Text(
-                    text = "Level ${level.toInt()}",
-                    fontSize = 32.5.sp,
+                    text = "Level $level",
+                    fontSize = (textSize.sp.value + 0.5f).sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF8BC34A), // Зеленый цвет обводки
-                    style = TextStyle(
-                        drawStyle = Stroke(
-                            width = 8f // Толщина обводки
-                        )
-                    ),
+                    color = Color(0xFF8BC34A),
+                    style = TextStyle(drawStyle = Stroke(width = 8f)),
                     fontFamily = ManropeBold
                 )
-                // Верхний текст (основной белый)
                 Text(
-                    text = "Level ${level.toInt()}",
-                    fontSize = 32.sp,
+                    text = "Level $level",
+                    fontSize = textSize.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     fontFamily = ManropeBold
                 )
             }
 
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Круговой прогресс
+            // Прогресс
             Box(contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(
                     progress = { progress.toFloat() / 100 },
-                    modifier = Modifier.size(200.dp),
-                    color = Color(0xFF8BC34A), // Зеленый цвет
-                    strokeWidth = 17.dp,
-                        trackColor = Color(0xFFF8BBD0), // Розовый бэкграунд круга
-                    strokeCap = StrokeCap.Round,
+                    modifier = Modifier.size(progressSize),
+                    color = Color(0xFF8BC34A),
+                    strokeWidth = (0.102f * progressSize.value).dp,
+                    trackColor = Color(0xFFF8BBD0),
+                    strokeCap = StrokeCap.Round
                 )
-                Box(contentAlignment = Alignment.Center){
-                    // Нижний текст (обводка)
+                Box(contentAlignment = Alignment.Center) {
                     Text(
-                        text = "${(progress.toInt())}%",
-                        fontSize = 32.5.sp,
+                        text = "$progress%",
+                        fontSize = (textSize.sp.value + 0.5f).sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF8BC34A), // Зеленый цвет обводки
-                        style = TextStyle(
-                            drawStyle = Stroke(
-                                width = 8f // Толщина обводки
-                            )
-                        ),
+                        color = Color(0xFF8BC34A),
+                        style = TextStyle(drawStyle = Stroke(width = 8f)),
                         fontFamily = ManropeBold
                     )
-                    // Верхний текст (основной белый)
                     Text(
-                        text = "${(progress.toInt())}%",
-                        fontSize = 32.sp,
+                        text = "$progress%",
+                        fontSize = textSize.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         fontFamily = ManropeBold
@@ -191,79 +190,93 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
                 }
             }
 
-            Spacer(modifier = Modifier.size(75.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
-            // Кнопки внизу
+            // Кнопки
             Column(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(bottom = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    CircleButton(
-                        text = "Lessons",
-                        iconId = R.drawable.ic_lessons,
-                        onClick = { onNavigateTo(Screen.LessonScreen) })
-                    Spacer(modifier = Modifier.width(30.dp))
-                    CircleButton(
-                        text = "Statistics",
-                        iconId = R.drawable.ic_statistics,
-                        onClick = { onNavigateTo(Screen.StatsScreen) }
-                    )
+                    CircleButton("Lessons", R.drawable.ic_lessons, buttonSize, iconSize, textSize.sp) {
+                        onNavigateTo(Screen.LessonScreen)
+                    }
+                    CircleButton("Statistics", R.drawable.ic_statistics, buttonSize, iconSize, textSize.sp) {
+                        onNavigateTo(Screen.StatsScreen)
+                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                CircleButton(
-                    text = "Credits",
-                    iconId = R.drawable.ic_credits,
-                    onClick = { onNavigateTo(Screen.CreditsScreen)}
-                )
+                CircleButton("Credits", R.drawable.ic_credits, buttonSize, iconSize, textSize.sp) {
+                    onNavigateTo(Screen.CreditsScreen)
+                }
             }
         }
     }
 }
-
 @Composable
 fun CircleButton(
     text: String,
     iconId: Int,
+    size: Dp,
+    iconSize: Dp,
+    fontSize: TextUnit,
     onClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
-            .size(140.dp)
+            .size(size)
             .clip(CircleShape)
             .background(Color(0x99f5e2e9))
             .clickable { onClick() }
             .border(width = 2.dp, color = Color(0xFFD97BA4), shape = CircleShape),
         contentAlignment = Alignment.Center
     ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
             Icon(
                 painter = painterResource(id = iconId),
                 contentDescription = text,
                 tint = Color(0xFFE91E63),
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(iconSize)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = text,
-                fontSize = 20.sp,
+                fontSize = fontSize * 0.8,
                 color = Color(0xFFE91E63),
                 fontWeight = FontWeight.Bold,
                 fontFamily = ManropeBold
             )
         }
-
     }
-
 }
 
+@Preview(
+    showBackground = true,
+    name = "Small phone",
+    widthDp = 360,
+    heightDp = 800
+)
+@Preview(
+    showBackground = true,
+    name = "medium phone",
+    widthDp = 390,
+    heightDp = 844
+)
+@Preview(
+    showBackground = true,
+    name = "large phone",
+    widthDp = 393,
+    heightDp = 873
+)
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {

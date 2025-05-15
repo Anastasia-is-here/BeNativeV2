@@ -34,9 +34,9 @@ object ApiModule {
             })
         }
         install(HttpTimeout) {
-            requestTimeoutMillis = 150000
-            connectTimeoutMillis = 100000
-            socketTimeoutMillis = 150000
+            requestTimeoutMillis = 15000
+            connectTimeoutMillis = 10000
+            socketTimeoutMillis = 15000
         }
 
     }

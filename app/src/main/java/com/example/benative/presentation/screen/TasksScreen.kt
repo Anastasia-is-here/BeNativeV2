@@ -20,14 +20,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -41,6 +48,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -77,6 +85,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import androidx.core.graphics.createBitmap
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
 import java.io.BufferedInputStream
 import java.io.FileOutputStream
@@ -116,7 +125,19 @@ fun AudioPlayer(uri: String) {
         ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(uri))
             prepare()
-            playWhenReady = false
+        }
+    }
+
+    var isPlaying by remember { mutableStateOf(false) }
+    var currentPosition by remember { mutableStateOf(0L) }
+    var duration by remember { mutableStateOf(0L) }
+
+    // Обновление прогресса каждую секунду
+    LaunchedEffect(exoPlayer) {
+        while (true) {
+            currentPosition = exoPlayer.currentPosition
+            duration = exoPlayer.duration
+            delay(500)
         }
     }
 
@@ -124,16 +145,65 @@ fun AudioPlayer(uri: String) {
         onDispose { exoPlayer.release() }
     }
 
-    AndroidView(
-        factory = {
-            PlayerView(context).apply {
-                player = exoPlayer
-                useController = true
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFFCCEFFF))
+            .padding(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            IconButton(onClick = {
+                if (exoPlayer.isPlaying) {
+                    exoPlayer.pause()
+                    isPlaying = false
+                } else {
+                    exoPlayer.play()
+                    isPlaying = true
+                }
+            }) {
+                Icon(
+                    painter = if (isPlaying) painterResource(R.drawable.pause_icon) else painterResource(R.drawable.playarrow_icon),
+                    contentDescription = if (isPlaying) "Pause" else "Play",
+                    tint = Color(0xFFE91E63),
+                    modifier = Modifier.size(40.dp)
+                )
             }
-        },
-        modifier = Modifier.fillMaxWidth()
-    )
+
+            Text(
+                text = "${formatTime(currentPosition)} / ${formatTime(duration)}",
+                color = Color(0xFFE91E63),
+                fontSize = 14.sp
+            )
+        }
+
+        Slider(
+            value = if (duration > 0) currentPosition / duration.toFloat() else 0f,
+            onValueChange = { newValue ->
+                val seekPosition = (duration * newValue).toLong()
+                exoPlayer.seekTo(seekPosition)
+                currentPosition = seekPosition
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = SliderDefaults.colors(
+                thumbColor = Color(0xFFE91E63),
+                activeTrackColor = Color(0xFFE91E63)
+            )
+        )
+    }
 }
+
+fun formatTime(milliseconds: Long): String {
+    val totalSeconds = milliseconds / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return String.format("%d:%02d", minutes, seconds)
+}
+
 
 @Composable
 fun PdfViewerFromUrl(
@@ -175,8 +245,7 @@ fun PdfViewerFromUrl(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(400.dp)
-            .background(Color.LightGray)
+            .height(500.dp)
             .padding(8.dp)
     ) {
         when {
@@ -364,7 +433,7 @@ fun TaskScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp, top = 30.dp),
+                        .padding(bottom = 16.dp, top = 30.dp, start = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(

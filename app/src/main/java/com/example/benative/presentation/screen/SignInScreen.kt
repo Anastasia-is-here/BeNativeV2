@@ -221,6 +221,24 @@ fun SignInScreen(onNavigateTo: (Screen) -> Unit = {}) {
     }
 }
 
+@Preview(
+    showBackground = true,
+    name = "Small phone",
+    widthDp = 360,
+    heightDp = 800
+)
+@Preview(
+    showBackground = true,
+    name = "medium phone",
+    widthDp = 390,
+    heightDp = 844
+)
+@Preview(
+    showBackground = true,
+    name = "large phone",
+    widthDp = 393,
+    heightDp = 873
+)
 @Preview(showBackground = true)
 @Composable
 fun SignInScreenPreview() {

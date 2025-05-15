@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
@@ -36,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -132,28 +134,42 @@ fun LessonCard(lesson: Lesson, onClick: () -> Unit) {
             .clickable { onClick() },
         color = Color(0xFFD6F2FF)
     ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize()
         ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(lesson.iconUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = lesson.title,
+            val maxWidth = maxWidth
+            val fontSize = when {
+                maxWidth < 140.dp -> 16.sp
+                maxWidth < 180.dp -> 18.sp
+                maxWidth < 220.dp -> 20.sp
+                else -> 22.sp
+            }
+
+            Column(
                 modifier = Modifier
-                    .size(120.dp)
-                    .padding(end = 16.dp)
-            )
-            Text(
-                text = lesson.title,
-                style = MaterialTheme.typography.titleMedium,
-                color = Color(0xFFCC6699),
-                fontSize = 22.sp
-            )
+                    .fillMaxSize()
+                    .padding(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(lesson.iconUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = lesson.title,
+                    modifier = Modifier
+                        .size(maxWidth * 0.6f)
+                        .padding(bottom = 8.dp)
+                )
+                Text(
+                    text = lesson.title,
+                    fontSize = fontSize,
+                    color = Color(0xFFCC6699),
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }
