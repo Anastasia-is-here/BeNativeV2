@@ -77,7 +77,7 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    var username by remember { mutableStateOf("Username") } // загружается из GetUserUseCase
+    var username by remember { mutableStateOf("Username") } 
     var newName by remember { mutableStateOf("") }
     var isEditingName by remember { mutableStateOf(false) }
 
@@ -98,8 +98,8 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
                     try {
                         Log.d("AvatarUpload", "Uploading file: ${file.name}")
                         UploadAvatarUseCase(token, file)
-                        avatarUrl = null // чтобы AsyncImage пересоздался
-                        avatarUrl = GetUserUseCase(token).avatar // получаем новую ссылку
+                        avatarUrl = null 
+                        avatarUrl = GetUserUseCase(token).avatar
                         Log.d("AvatarUpload", "New avatar URL: $avatarUrl")
                     } catch (e: Exception) {
                         errorMessage = "Avatar loading error"
@@ -174,7 +174,6 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
             )
         }
 
-// Confirmation dialog
         if (showLogoutDialog) {
             AlertDialog(
                 onDismissRequest = { showLogoutDialog = false },
@@ -210,10 +209,9 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
                         coroutineScope.launch {
                             val token = AuthManager.getToken(context).first()
                             if (token != null) {
-                                // Сбрасываем на дефолтный URL
                                 DeleteAvatarUseCase(token)
-                                avatarUrl = null // чтобы AsyncImage пересоздался
-                                avatarUrl = GetUserUseCase(token).avatar // получаем новую ссылку
+                                avatarUrl = null 
+                                avatarUrl = GetUserUseCase(token).avatar 
                             }
                         }
                     }) { Text("Delete") }
@@ -231,7 +229,6 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
                 .wrapContentSize()
         ) {
 
-            // Показываем выбранное изображение, если есть, иначе — из сети
             if (selectedImageUri != null) {
                 AsyncImage(
                     ImageRequest.Builder(LocalContext.current)
@@ -283,7 +280,7 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
                         }
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_cancel), // добавь иконку крестика в drawable
+                            painter = painterResource(R.drawable.ic_cancel), 
                             contentDescription = "Cancel",
                             tint = Color(0xFFE91E63)
                         )
@@ -352,13 +349,12 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
                 Button(
                     onClick = {
                         if (isEditingName) {
-                            // сохранить новое имя
                             coroutineScope.launch {
                                 try {
                                     val token = AuthManager.getToken(context).first()
                                     if (token != null) {
                                         UpdateUserNameUseCase(token, newName)
-                                    } // реализация уже обсуждалась
+                                    } 
                                     username = newName
                                     isEditingName = false
                                 } catch (e: Exception) {
@@ -388,7 +384,7 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0x88000000))
-                .clickable(enabled = false) { /* блокирует всё ниже */ }
+                .clickable(enabled = false) { }
                 .zIndex(1f),
             contentAlignment = Alignment.Center
         ) {
