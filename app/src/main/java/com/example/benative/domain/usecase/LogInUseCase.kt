@@ -1,14 +1,18 @@
 package com.example.benative.domain.usecase
 
-import com.example.benative.data.ApiRepositoryImpl
+import com.example.benative.data.api.ApiRepositoryImpl
 import com.example.benative.data.KtorHttpException
 import com.example.benative.domain.LoginRequest
 import com.example.benative.domain.LoginResponse
+import javax.inject.Inject
+import javax.inject.Singleton
 
-object LogInUseCase {
+class LogInUseCase @Inject constructor(
+    private val apiRepositoryImpl: ApiRepositoryImpl
+) {
     suspend operator fun invoke(body: LoginRequest): Result<LoginResponse> {
         return try {
-            val response = ApiRepositoryImpl.logIn(body)
+            val response = apiRepositoryImpl.logIn(body)
             Result.success(response)
         } catch (e: KtorHttpException) {
             Result.failure(e)

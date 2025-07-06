@@ -46,11 +46,11 @@ import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.benative.domain.usecase.GetLessonsUseCase
 import com.example.benative.R
-import com.example.benative.presentation.navigation.Screen
 import com.example.benative.data.AuthManager
 import com.example.benative.domain.Lesson
+import com.example.benative.domain.usecase.GetLessonsUseCase
+import com.example.benative.presentation.navigation.Screen
 import com.example.benative.presentation.theme.BeNativeTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -62,22 +62,22 @@ fun LessonScreen(onNavigateTo: (Screen) -> Unit = {}) {
     val coroutineScope = rememberCoroutineScope()
     var lessons by remember { mutableStateOf<List<Lesson>>(emptyList()) }
 
-    LaunchedEffect(Unit) {
-        val token = AuthManager.getToken(context).first()
-        if (token != null) {
-            coroutineScope.launch {
-                runCatching {
-                    GetLessonsUseCase(token)
-
-                }.onSuccess {
-                    lessons = it
-                }.onFailure { error ->
-                    Log.e("LessonLoadError", "Ошибка загрузки урока или заданий", error)
-                }
-                Log.d("Lessons", GetLessonsUseCase(token).toString())
-            }
-        }
-    }
+//    LaunchedEffect(Unit) {
+//        val token = AuthManager.getToken(context).first()
+//        if (token != null) {
+//            coroutineScope.launch {
+//                runCatching {
+//                    GetLessonsUseCase(token)
+//
+//                }.onSuccess {
+//                    lessons = it
+//                }.onFailure { error ->
+//                    Log.e("LessonLoadError", "Ошибка загрузки урока или заданий", error)
+//                }
+//                Log.d("Lessons", GetLessonsUseCase(token).toString())
+//            }
+//        }
+//    }
 
     Box(
         modifier = Modifier.background(Color(0xFFB3E5FC)).fillMaxSize()

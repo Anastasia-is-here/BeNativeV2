@@ -15,16 +15,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -62,11 +57,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.PlayerControlView
 import androidx.media3.ui.PlayerView
-import com.example.benative.domain.usecase.CompleteLessonUseCase
-import com.example.benative.domain.usecase.GetLessonUseCase
-import com.example.benative.domain.usecase.GetTasksUseCase
 import com.example.benative.R
 import com.example.benative.data.AuthManager
 import com.example.benative.domain.Lesson
@@ -74,21 +65,20 @@ import com.example.benative.domain.LessonCompletionRequest
 import com.example.benative.domain.Task
 import com.example.benative.domain.TaskResult
 import com.example.benative.domain.TaskUiState
-import com.github.barteksc.pdfviewer.PDFView
+import com.example.benative.domain.usecase.CompleteLessonUseCase
+import com.example.benative.domain.usecase.GetLessonUseCase
+import com.example.benative.domain.usecase.GetTasksUseCase
+import com.example.benative.presentation.component.button.ButtonPrimary
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
-import androidx.core.graphics.createBitmap
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withTimeout
-import java.io.BufferedInputStream
-import java.io.FileOutputStream
 
 @Composable
 fun VideoPlayer(uri: String, modifier: Modifier = Modifier) {
@@ -351,23 +341,23 @@ fun TaskScreen(
     val taskStates = remember { mutableStateMapOf<Int, TaskUiState>() }
     var forceReset by remember { mutableStateOf(false) }
 
-    LaunchedEffect(lessonId) {
-        val token = AuthManager.getToken(context).first()
-        if (token != null) {
-            runCatching {
-                lesson = GetLessonUseCase(token, lessonId)
-                tasks = GetTasksUseCase(token, lessonId)
-
-                tasks.forEach { task ->
-                    taskStates[task.id] = TaskUiState()
-                }
-
-                forceReset = false
-            }.onFailure { error ->
-                Log.e("LessonLoadError", "Task or lesson loading error", error)
-            }
-        }
-    }
+//    LaunchedEffect(lessonId) {
+//        val token = AuthManager.getToken(context).first()
+//        if (token != null) {
+//            runCatching {
+//                lesson = GetLessonUseCase(token, lessonId)
+//                tasks = GetTasksUseCase(token, lessonId)
+//
+//                tasks.forEach { task ->
+//                    taskStates[task.id] = TaskUiState()
+//                }
+//
+//                forceReset = false
+//            }.onFailure { error ->
+//                Log.e("LessonLoadError", "Task or lesson loading error", error)
+//            }
+//        }
+//    }
 
     if (lesson != null) {
 
@@ -382,7 +372,9 @@ fun TaskScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
                 ) {
                     // Перепройти урок
-                    Button(
+
+                    ButtonPrimary(
+                        modifier = Modifier,
                         onClick = {
                             // сброс состояния
                             taskStates.values.forEach { s ->
@@ -398,7 +390,8 @@ fun TaskScreen(
 
                     // Завершить урок
                     val canFinish = taskStates.values.any { it.isChecked.value }
-                    Button(
+                    ButtonPrimary(
+                        modifier = Modifier,
                         onClick = {
                             // собираем детали
                             val details: List<TaskResult> = taskStates.map { (taskId, s) ->
@@ -414,13 +407,13 @@ fun TaskScreen(
                                 LessonCompletionRequest(lessonId = lessonId, results = details)
                             // вызываем useCase для отправки на сервер
 
-                            coroutineScope.launch {
-                                val token = AuthManager.getToken(context).first()
-                                if (token != null) {
-                                    CompleteLessonUseCase(token, request)
-                                    onNavigateBack() // или перейти на MainScreen
-                                }
-                            }
+//                            coroutineScope.launch {
+//                                val token = AuthManager.getToken(context).first()
+//                                if (token != null) {
+//                                    CompleteLessonUseCase(token, request)
+//                                    onNavigateBack() // или перейти на MainScreen
+//                                }
+//                            }
                         },
                         enabled = canFinish
                     ) {
@@ -524,10 +517,6 @@ fun TaskScreen(
                                         .equals(task.correctAnswer.trim(), ignoreCase = true)
                                     state.isCorrect.value = correct
                                     onTaskChecked(task, correct)
-                                },
-                                onRetry = {
-                                    // Здесь вы можете сбросить состояние задания
-                                    taskStates[task.id] = TaskUiState() // Сбросить состояние задания
                                 }
                             )
                         }
@@ -579,7 +568,8 @@ fun TextInputTaskItem(
             enabled = !state.isChecked.value,
             /* … */
         )
-        Button(
+        ButtonPrimary(
+            modifier = Modifier,
             onClick = onCheck,
             enabled = !state.isChecked.value
         ) {
@@ -598,8 +588,7 @@ fun TextInputTaskItem(
 fun SingleChoiceTaskItem(
     task: Task,
     state: TaskUiState,
-    onAnswerSelected: (String) -> Unit,
-    onRetry: () -> Unit
+    onAnswerSelected: (String) -> Unit
 ) {
     Column(modifier = Modifier.padding(vertical = 12.dp)) {
         Row(

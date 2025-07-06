@@ -1,8 +1,11 @@
 package com.example.benative.domain.usecase
 
-import com.example.benative.data.ApiRepositoryImpl
+import com.example.benative.data.api.ApiRepositoryImpl
+import javax.inject.Inject
 
-object UpdateUserNameUseCase{
+class UpdateUserNameUseCase @Inject constructor(
+    private val apiRepositoryImpl: ApiRepositoryImpl
+) {
     suspend operator fun invoke(token: String, newName: String) =
-        ApiRepositoryImpl.updateUserName(token, newName)
+        apiRepositoryImpl.updateUserName(token, newName)
 }

@@ -5,14 +5,29 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,12 +53,13 @@ import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.benative.domain.usecase.GetUserUseCase
-import com.example.benative.domain.usecase.UploadAvatarUseCase
 import com.example.benative.R
 import com.example.benative.data.AuthManager
 import com.example.benative.domain.usecase.DeleteAvatarUseCase
+import com.example.benative.domain.usecase.GetUserUseCase
 import com.example.benative.domain.usecase.UpdateUserNameUseCase
+import com.example.benative.domain.usecase.UploadAvatarUseCase
+import com.example.benative.presentation.component.button.ButtonSecondary
 import com.example.benative.presentation.navigation.Screen
 import com.example.benative.presentation.theme.ManropeBold
 import kotlinx.coroutines.flow.first
@@ -92,47 +108,47 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
             coroutineScope.launch {
                 isUploading = true
 
-                val file = getFileFromUri(context, uri)
-                val token = AuthManager.getToken(context).first()
-                if (file != null && token != null) {
-                    try {
-                        Log.d("AvatarUpload", "Uploading file: ${file.name}")
-                        UploadAvatarUseCase(token, file)
-                        avatarUrl = null 
-                        avatarUrl = GetUserUseCase(token).avatar
-                        Log.d("AvatarUpload", "New avatar URL: $avatarUrl")
-                    } catch (e: Exception) {
-                        errorMessage = "Avatar loading error"
-                    }finally {
-                        isUploading = false
-                    }
-                }
+//                val file = getFileFromUri(context, uri)
+//                val token = AuthManager.getToken(context).first()
+//                if (file != null && token != null) {
+//                    try {
+//                        Log.d("AvatarUpload", "Uploading file: ${file.name}")
+//                        UploadAvatarUseCase(token, file)
+//                        avatarUrl = null
+//                        avatarUrl = GetUserUseCase(token).avatar
+//                        Log.d("AvatarUpload", "New avatar URL: $avatarUrl")
+//                    } catch (e: Exception) {
+//                        errorMessage = "Avatar loading error"
+//                    }finally {
+//                        isUploading = false
+//                    }
+//                }
             }
         }
     }
 
-    LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            try {
-                val token = AuthManager.getToken(context).first()
-
-                if (token == null) {
-                    errorMessage = "Not authenticated"
-                    isLoading = false
-                    return@launch
-                }
-
-                val response = GetUserUseCase(token)
-                avatarUrl = response.avatar
-
-                username = response.name
-                newName = username
-
-            } catch (e: Exception) {
-                errorMessage = "Error"
-            }
-        }
-    }
+//    LaunchedEffect(Unit) {
+//        coroutineScope.launch {
+//            try {
+//                val token = AuthManager.getToken(context).first()
+//
+//                if (token == null) {
+//                    errorMessage = "Not authenticated"
+//                    isLoading = false
+//                    return@launch
+//                }
+//
+//                val response = GetUserUseCase(token)
+//                avatarUrl = response.avatar
+//
+//                username = response.name
+//                newName = username
+//
+//            } catch (e: Exception) {
+//                errorMessage = "Error"
+//            }
+//        }
+//    }
 
     Box(modifier = Modifier.background(Color(0xFFB3E5FC)).fillMaxSize()) {
 
@@ -183,7 +199,7 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
                     TextButton(onClick = {
                         showLogoutDialog = false
                         coroutineScope.launch {
-                            AuthManager.clearToken(context)
+                            //AuthManager.clearToken(context)
                             onNavigateTo(Screen.SignInScreen)
                         }
                     }) {
@@ -198,29 +214,29 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
             )
         }
 
-        if (showDeleteDialog) {
-            AlertDialog(
-                onDismissRequest = { showDeleteDialog = false },
-                title = { Text("Delete avatar") },
-                text = { Text("Are you sure you want to delete your avatar?") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showDeleteDialog = false
-                        coroutineScope.launch {
-                            val token = AuthManager.getToken(context).first()
-                            if (token != null) {
-                                DeleteAvatarUseCase(token)
-                                avatarUrl = null 
-                                avatarUrl = GetUserUseCase(token).avatar 
-                            }
-                        }
-                    }) { Text("Delete") }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
-                }
-            )
-        }
+//        if (showDeleteDialog) {
+//            AlertDialog(
+//                onDismissRequest = { showDeleteDialog = false },
+//                title = { Text("Delete avatar") },
+//                text = { Text("Are you sure you want to delete your avatar?") },
+//                confirmButton = {
+//                    TextButton(onClick = {
+//                        showDeleteDialog = false
+//                        coroutineScope.launch {
+//                            val token = AuthManager.getToken(context).first()
+//                            if (token != null) {
+//                                DeleteAvatarUseCase(token)
+//                                avatarUrl = null
+//                                avatarUrl = GetUserUseCase(token).avatar
+//                            }
+//                        }
+//                    }) { Text("Delete") }
+//                },
+//                dismissButton = {
+//                    TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+//                }
+//            )
+//        }
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -310,13 +326,8 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-                Button(
+                ButtonSecondary(
                     onClick = { imagePickerLauncher.launch("image/*") },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf5e2e9)),
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = Color(0xFFE91E63)
-                    ),
                     modifier = Modifier.width(200.dp)
                 ) {
                     Text(
@@ -328,13 +339,8 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(
+            ButtonSecondary(
                     onClick = {showDeleteDialog = true},
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf5e2e9)),
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = Color(0xFFE91E63)
-                    ),
                     modifier = Modifier.width(200.dp)
                 ) {
                     Text(
@@ -346,27 +352,25 @@ fun ProfileScreen(onNavigateBack: () -> Unit, onNavigateTo: (Screen) -> Unit) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(
+            ButtonSecondary(
                     onClick = {
-                        if (isEditingName) {
-                            coroutineScope.launch {
-                                try {
-                                    val token = AuthManager.getToken(context).first()
-                                    if (token != null) {
-                                        UpdateUserNameUseCase(token, newName)
-                                    } 
-                                    username = newName
-                                    isEditingName = false
-                                } catch (e: Exception) {
-                                    errorMessage = "Failed to upload new name"
-                                }
-                            }
-                        } else {
-                            isEditingName = true
-                        }
+//                        if (isEditingName) {
+//                            coroutineScope.launch {
+//                                try {
+//                                    val token = AuthManager.getToken(context).first()
+//                                    if (token != null) {
+//                                        UpdateUserNameUseCase(token, newName)
+//                                    }
+//                                    username = newName
+//                                    isEditingName = false
+//                                } catch (e: Exception) {
+//                                    errorMessage = "Failed to upload new name"
+//                                }
+//                            }
+//                        } else {
+//                            isEditingName = true
+//                        }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf5e2e9)),
-                    border = BorderStroke(1.dp, Color(0xFFE91E63)),
                     modifier = Modifier.width(200.dp)
                 ) {
                     Text(

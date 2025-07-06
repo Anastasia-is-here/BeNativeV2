@@ -1,9 +1,12 @@
 package com.example.benative.domain.usecase
 
-import com.example.benative.data.ApiRepositoryImpl
+import com.example.benative.data.api.ApiRepositoryImpl
 import java.io.File
+import javax.inject.Inject
 
-object UploadAvatarUseCase {
+class UploadAvatarUseCase @Inject constructor(
+    private val apiRepositoryImpl: ApiRepositoryImpl
+) {
     suspend operator fun invoke(token: String, file: File) =
-        ApiRepositoryImpl.uploadAvatar(token, file)
+        apiRepositoryImpl.uploadAvatar(token, file)
 }

@@ -10,11 +10,13 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import com.example.benative.presentation.navigation.Navigation
 import com.example.benative.presentation.theme.BeNativeTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 data class RegisterRequest(val name: String, val login: String, val password: String)
 data class LoginRequest(val login: String, val password: String)
 data class LoginResponse(val token: String)
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

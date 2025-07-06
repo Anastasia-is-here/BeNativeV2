@@ -14,12 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,12 +32,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
-import com.example.benative.domain.usecase.RegisterUseCase
 import com.example.benative.R
-import com.example.benative.domain.RegisterRequest
-import com.example.benative.presentation.navigation.Screen
 import com.example.benative.data.AuthManager
 import com.example.benative.data.KtorHttpException
+import com.example.benative.domain.RegisterRequest
+import com.example.benative.domain.usecase.RegisterUseCase
+import com.example.benative.presentation.component.StyledOutlinedTextField
+import com.example.benative.presentation.component.button.ButtonPrimary
+import com.example.benative.presentation.navigation.Screen
 import com.example.benative.presentation.theme.BeNativeTheme
 import com.example.benative.presentation.theme.MajorMonoDisplay
 import com.example.benative.presentation.theme.ManropeBold
@@ -108,7 +105,7 @@ fun SignUpScreen(onNavigateBack: () -> Unit,
 
             Spacer(modifier = Modifier.size(14.dp))
 
-            OutlinedTextField(
+            StyledOutlinedTextField(
                 value = login,
                 onValueChange = { login = it },
                 modifier = Modifier
@@ -121,15 +118,9 @@ fun SignUpScreen(onNavigateBack: () -> Unit,
                         color = Color(0xFF636363),
                         fontSize = 18.sp
                     )
-                },
-                shape = RoundedCornerShape(30.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    errorTextColor = Color.Red,
-                    focusedBorderColor = Color("#FFFFFF".toColorInt()),
-
-                    )
+                }
             )
-            OutlinedTextField(
+            StyledOutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
                 modifier = Modifier
@@ -142,17 +133,10 @@ fun SignUpScreen(onNavigateBack: () -> Unit,
                         color = Color(0xFF636363),
                         fontSize = 18.sp
                     )
-                },
-                shape = RoundedCornerShape(30.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    errorTextColor = Color.Red,
-                    focusedBorderColor = Color("#FFFFFF".toColorInt()),
-
-                    )
-
+                }
             )
 
-            OutlinedTextField(
+            StyledOutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 modifier = Modifier
@@ -165,14 +149,9 @@ fun SignUpScreen(onNavigateBack: () -> Unit,
                         color = Color(0xFF636363),
                         fontSize = 18.sp
                     )
-                },
-                shape = RoundedCornerShape(30.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    errorTextColor = Color.Red,
-                    focusedBorderColor = Color("#FFFFFF".toColorInt())
-                )
+                }
             )
-            OutlinedTextField(
+            StyledOutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
                 modifier = Modifier
@@ -185,87 +164,80 @@ fun SignUpScreen(onNavigateBack: () -> Unit,
                         color = Color(0xFF636363),
                         fontSize = 18.sp
                     )
-                },
-                shape = RoundedCornerShape(30.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    errorTextColor = Color.Red,
-                    focusedBorderColor = Color("#FFFFFF".toColorInt())
-                )
+                }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
 
-            Button(
+            ButtonPrimary(
+                modifier = Modifier.width(120.dp),
                 onClick = {
                     errorMessage = null
 
                     // Проверка: поля не пустые
                     if (login.isBlank() || password.isBlank() || confirmPassword.isBlank() || name.isBlank()) {
                         errorMessage = "All fields are required"
-                        return@Button
+                        return@ButtonPrimary
                     }
 
                     // Проверка: латиница
                     val latinRegex = Regex("^[a-zA-Z0-9]+$")
                     if (!latinRegex.matches(login) || !latinRegex.matches(password)) {
                         errorMessage = "Only Latin letters and numbers allowed"
-                        return@Button
+                        return@ButtonPrimary
                     }
 
                     // Проверка: длина пароля
                     if (password.length < 8) {
                         errorMessage = "Password must be at least 8 characters"
-                        return@Button
+                        return@ButtonPrimary
                     }
 
                     // Проверка: хотя бы одна цифра
                     if (!password.any { it.isDigit() }) {
                         errorMessage = "Password must contain at least one number"
-                        return@Button
+                        return@ButtonPrimary
                     }
 
                     // Проверка: совпадение пароля
                     if (password != confirmPassword) {
                         errorMessage = "Passwords do not match"
-                        return@Button
+                        return@ButtonPrimary
                     }
 
                     isLoading = true
 
-                    coroutineScope.launch {
-
-                            val request = RegisterRequest(
-                                login = login,
-                                password = password,
-                                name = name
-                            )
-                            val registerResponse = RegisterUseCase(request)
-
-                        registerResponse.onSuccess { response ->
-                            AuthManager.saveToken(context, response.token)
-                            // Переходим на главный экран
-                            onNavigateTo(Screen.MainScreen)
-                        }.onFailure { error ->
-                            when (error) {
-                                is KtorHttpException -> {
-                                    if (error.code == 409) {
-                                        errorMessage = "User with this login already exists"
-                                    } else {
-                                        errorMessage = "Error ${error.code}: ${error.message}"
-                                    }
-                                }
-                                else -> {
-                                    errorMessage = "Something went wrong: ${error.localizedMessage}"
-                                }
-                            }
-                        }
-
-                    }
-                },
-                shape = RoundedCornerShape(20.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                modifier = Modifier.width(120.dp)
+//                    coroutineScope.launch {
+//
+//                            val request = RegisterRequest(
+//                                login = login,
+//                                password = password,
+//                                name = name
+//                            )
+//                            val registerResponse = RegisterUseCase(request)
+//
+//                        registerResponse.onSuccess { response ->
+//                            AuthManager.saveToken(context, response.token)
+//                            // Переходим на главный экран
+//                            onNavigateTo(Screen.MainScreen)
+//                        }.onFailure { error ->
+//                            when (error) {
+//                                is KtorHttpException -> {
+//                                    if (error.code == 409) {
+//                                        errorMessage = "User with this login already exists"
+//                                    } else {
+//                                        errorMessage = "Error ${error.code}: ${error.message}"
+//                                    }
+//                                }
+//                                else -> {
+//                                    errorMessage = "Something went wrong: ${error.localizedMessage}"
+//                                }
+//                            }
+//                        }
+//
+//                    }
+                }
             ) {
                 Text(
                     text = "Go",

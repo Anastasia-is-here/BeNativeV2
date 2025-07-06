@@ -36,10 +36,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.example.benative.domain.usecase.GetUserStatsUseCase
 import com.example.benative.R
 import com.example.benative.data.AuthManager
 import com.example.benative.domain.UserStatsResponse
+import com.example.benative.domain.usecase.GetUserStatsUseCase
 import com.example.benative.presentation.theme.BeNativeTheme
 import com.example.benative.presentation.theme.MajorMonoDisplay
 import com.example.benative.presentation.theme.ManropeBold
@@ -52,18 +52,18 @@ fun StatsScreen(onNavigateBack: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    LaunchedEffect(true) {
-        val token = AuthManager.getToken(context).first()
-        if (token != null) {
-            coroutineScope.launch {
-                stats = try {
-                    GetUserStatsUseCase(token)
-                } catch (e: Exception) {
-                    null
-                }
-            }
-        }
-    }
+//    LaunchedEffect(true) {
+//        val token = AuthManager.getToken(context).first()
+//        if (token != null) {
+//            coroutineScope.launch {
+//                stats = try {
+//                    GetUserStatsUseCase(token)
+//                } catch (e: Exception) {
+//                    null
+//                }
+//            }
+//        }
+//    }
 
     Box(
         modifier = Modifier

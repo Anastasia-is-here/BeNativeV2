@@ -1,4 +1,4 @@
-package com.example.benative.data
+package com.example.benative.data.api
 
 import com.example.benative.domain.Lesson
 import com.example.benative.domain.LessonCompletionRequest

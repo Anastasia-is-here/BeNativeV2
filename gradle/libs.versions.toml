@@ -1,39 +1,30 @@
 [versions]
-agp = "8.9.2"
-androidPdfViewer = "3.2.0-beta.1"
+agp = "8.10.1"
 androidPdfViewerVersion = "3.2.0-beta.3"
 coilCompose = "2.4.0"
-coreKtxVersion = "1.16.0"
 coreSplashscreen = "1.0.1"
 datastorePreferencesVersion = "1.1.4"
-exposedDao = "0.41.1"
-hiltAndroidGradlePlugin = "2.51"
-jbcrypt = "0.4"
-jjwt = "0.9.1"
+hiltAndroidGradlePlugin = "2.56.2"
+hiltNavigationCompose = "1.2.0"
 kotlin = "2.1.20"
 coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 kotlinxCoroutinesAndroid = "1.10.1"
-kotlinxDatetime = "0.6.2"
 kotlinxSerializationJsonVersion = "1.8.0"
-ktorClientTimeout = "2.3.5"
-ktorServerNetty = "3.1.2"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
 composeBom = "2025.04.01"
-logbackClassic = "1.2.11"
 media3Exoplayer = "1.6.1"
-mysqlConnectorJava = "8.0.33"
 navigationCompose = "2.8.9"
 ktor-version = "3.1.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-androidx-core-ktx-v1131 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferencesVersion" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3Exoplayer" }
 androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3Exoplayer" }
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3Exoplayer" }

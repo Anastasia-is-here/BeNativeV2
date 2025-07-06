@@ -71,7 +71,6 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
     // Kotlinx Serialization
-    implementation(libs.androidx.core.ktx.v1131)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.serialization.kotlinx.json)
 
@@ -82,6 +81,7 @@ dependencies {
     implementation(libs.ktor.ktor.client.cio)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.mhiew.android.pdf.viewer)

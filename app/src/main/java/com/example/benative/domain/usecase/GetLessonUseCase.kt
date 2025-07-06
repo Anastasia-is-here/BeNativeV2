@@ -1,7 +1,10 @@
 package com.example.benative.domain.usecase
 
-import com.example.benative.data.ApiRepositoryImpl
+import com.example.benative.data.api.ApiRepositoryImpl
+import javax.inject.Inject
 
-object GetLessonUseCase {
-    suspend operator fun invoke(token: String, lessonId: Int) = ApiRepositoryImpl.getLesson(token, lessonId)
+class GetLessonUseCase @Inject constructor(
+    private val apiRepositoryImpl: ApiRepositoryImpl
+) {
+    suspend operator fun invoke(token: String, lessonId: Int) = apiRepositoryImpl.getLesson(token, lessonId)
 }

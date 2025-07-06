@@ -1,6 +1,7 @@
 package com.example.benative.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -11,32 +12,37 @@ import com.example.benative.presentation.screen.LessonScreen
 import com.example.benative.presentation.screen.MainScreen
 import com.example.benative.presentation.screen.ProfileScreen
 import com.example.benative.presentation.screen.SignInScreen
+import com.example.benative.presentation.screen.SignInView
 import com.example.benative.presentation.screen.SignUpScreen
 import com.example.benative.presentation.screen.SplashScreen
 import com.example.benative.presentation.screen.StatsScreen
 import com.example.benative.presentation.screen.TaskScreen
+import com.example.benative.presentation.screen.viewmodel.SignInScreenViewModel
 
 @Composable
 fun Navigation(navController: NavHostController) {
     NavHost(navController = navController, startDestination = Screen.SignInScreen.route) {
 
-        composable(route = Screen.SignInScreen.route){
-            SignInScreen{ onNavigateTo ->
-                navController.navigate(onNavigateTo.route){
-                launchSingleTop = true
+        composable(route = Screen.SignInScreen.route) {
+            SignInScreen(
+                onNavigateTo = { onNavigateTo ->
+                    navController.navigate(onNavigateTo.route) {
+                        launchSingleTop = true
+                    }
                 }
-            }
+            )
         }
 
-        composable(route = Screen.SplashScreen.route){
-            SplashScreen{ onNavigateTo ->
-                navController.navigate(onNavigateTo.route){
+
+        composable(route = Screen.SplashScreen.route) {
+            SplashScreen { onNavigateTo ->
+                navController.navigate(onNavigateTo.route) {
                     launchSingleTop = true
                 }
             }
         }
 
-        composable(route = Screen.SignUpScreen.route){
+        composable(route = Screen.SignUpScreen.route) {
             SignUpScreen(
                 onNavigateBack = { navController.popBackStack() }
             ) { onNavigateTo ->
@@ -46,17 +52,17 @@ fun Navigation(navController: NavHostController) {
             }
         }
 
-        composable(route = Screen.MainScreen.route){
-            MainScreen{ onNavigateTo ->
-                navController.navigate(onNavigateTo.route){
+        composable(route = Screen.MainScreen.route) {
+            MainScreen { onNavigateTo ->
+                navController.navigate(onNavigateTo.route) {
                     launchSingleTop = true
                 }
             }
         }
 
-        composable(route = Screen.LessonScreen.route){
-            LessonScreen{ onNavigateTo ->
-                navController.navigate(onNavigateTo.route){
+        composable(route = Screen.LessonScreen.route) {
+            LessonScreen { onNavigateTo ->
+                navController.navigate(onNavigateTo.route) {
                     launchSingleTop = true
                 }
             }
@@ -76,23 +82,23 @@ fun Navigation(navController: NavHostController) {
             )
         }
 
-        composable(route = Screen.StatsScreen.route){
+        composable(route = Screen.StatsScreen.route) {
             StatsScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
 
-        composable(route = Screen.ProfileScreen.route){
+        composable(route = Screen.ProfileScreen.route) {
             ProfileScreen(
                 onNavigateBack = { navController.popBackStack() }
-            ){ onNavigateTo ->
-                navController.navigate(onNavigateTo.route){
+            ) { onNavigateTo ->
+                navController.navigate(onNavigateTo.route) {
                     launchSingleTop = true
                 }
             }
         }
 
-        composable(route = Screen.CreditsScreen.route){
+        composable(route = Screen.CreditsScreen.route) {
             CreditsScreen(
                 onNavigateBack = { navController.popBackStack() }
             )

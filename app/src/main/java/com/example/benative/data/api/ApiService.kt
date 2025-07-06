@@ -1,5 +1,6 @@
-package com.example.benative.data
+package com.example.benative.data.api
 
+import com.example.benative.data.stringOrException
 import com.example.benative.domain.Lesson
 import com.example.benative.domain.LessonCompletionRequest
 import com.example.benative.domain.LoginRequest
@@ -8,6 +9,7 @@ import com.example.benative.domain.RegisterRequest
 import com.example.benative.domain.Task
 import com.example.benative.domain.User
 import com.example.benative.domain.UserStatsResponse
+import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
@@ -23,19 +25,24 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import kotlinx.serialization.json.Json
 import java.io.File
+import javax.inject.Inject
+import javax.inject.Singleton
 
-object ApiService {
+@Singleton
+class ApiService @Inject constructor(
+    private val client: HttpClient
+) {
 
-    suspend fun getLesson(token: String, lessonId: Int): Lesson = ApiModule().get("lessons/$lessonId"){
+    suspend fun getLesson(token: String, lessonId: Int): Lesson = client.get("lessons/$lessonId"){
         header(HttpHeaders.Authorization, "Bearer $token")
     }.body()
 
-    suspend fun getTasks(token: String, lessonId: Int): List<Task> = ApiModule().get("lessons/$lessonId/tasks"){
+    suspend fun getTasks(token: String, lessonId: Int): List<Task> = client.get("lessons/$lessonId/tasks"){
         header(HttpHeaders.Authorization, "Bearer $token")
     }.body()
 
     suspend fun logIn(body: LoginRequest): LoginResponse {
-        val rawJson = ApiModule().post("login"){
+        val rawJson = client.post("login"){
             contentType(ContentType.Application.Json)
             setBody(body)
         }.stringOrException()
@@ -44,7 +51,7 @@ object ApiService {
     }
 
     suspend fun register(body: RegisterRequest): LoginResponse {
-        val rawJson = ApiModule().post("register") {
+        val rawJson = client.post("register") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }.stringOrException()
@@ -52,29 +59,29 @@ object ApiService {
         return Json.decodeFromString(rawJson)
     }
 
-    suspend fun getUser(token: String): User = ApiModule().get("me"){
+    suspend fun getUser(token: String): User = client.get("me"){
         header(HttpHeaders.Authorization, "Bearer $token")
         contentType(ContentType.Application.Json)
     }.body()
 
-    suspend fun getLessons(token: String): List<Lesson> = ApiModule().get("lessons"){
+    suspend fun getLessons(token: String): List<Lesson> = client.get("lessons"){
         header(HttpHeaders.Authorization, "Bearer $token")
     }.body()
 
     suspend fun completeLesson(token: String, body: LessonCompletionRequest) {
-        ApiModule().post("lessons/${body.lessonId}/complete") {
+        client.post("lessons/${body.lessonId}/complete") {
             header(HttpHeaders.Authorization, "Bearer $token")
             setBody(body)
         }
     }
 
-    suspend fun getUserStats(token: String): UserStatsResponse = ApiModule().get("user/stats") {
+    suspend fun getUserStats(token: String): UserStatsResponse = client.get("user/stats") {
         header(HttpHeaders.Authorization, "Bearer $token")
         contentType(ContentType.Application.Json)
     }.body()
 
     suspend fun uploadAvatar(token: String, file: File) {
-        ApiModule().post("user/avatar") {
+        client.post("user/avatar") {
             header(HttpHeaders.Authorization, "Bearer $token")
             setBody(MultiPartFormDataContent(
                 formData {
@@ -88,13 +95,13 @@ object ApiService {
     }
 
     suspend fun deleteAvatar(token: String){
-        ApiModule().delete("user/avatar"){
+        client.delete("user/avatar"){
             header(HttpHeaders.Authorization, "Bearer $token")
         }
     }
 
     suspend fun updateUserName(token: String, newName: String) {
-        ApiModule().put("user/name") {
+        client.put("user/name") {
             header(HttpHeaders.Authorization, "Bearer $token")
             contentType(ContentType.Application.Json)
             setBody(mapOf("name" to newName))

@@ -1,9 +1,9 @@
 package com.example.benative.presentation.screen
 
+import android.annotation.SuppressLint
 import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -31,8 +29,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -42,21 +38,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
-import com.example.benative.domain.usecase.GetUserUseCase
 import com.example.benative.R
-import com.example.benative.presentation.navigation.Screen
 import com.example.benative.data.AuthManager
+import com.example.benative.domain.usecase.GetUserUseCase
+import com.example.benative.presentation.component.button.ButtonCircle
+import com.example.benative.presentation.navigation.Screen
 import com.example.benative.presentation.theme.BeNativeTheme
 import com.example.benative.presentation.theme.ManropeBold
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(UnstableApi::class)
 @Composable
 fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
@@ -69,32 +65,32 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            try {
-                val token = AuthManager.getToken(context).first()
-                if (token == null) {
-                    errorMessage = "Not authenticated"
-                    isLoading = false
-                    return@launch
-                }
-                try {
-                    val userResponse = GetUserUseCase(token)
-                    // Преобразуем experience в процент (предположим, максимум для уровня 1 = 100)
-                    val maxExperienceForLevel = 100
-                    progress = (userResponse.experience % maxExperienceForLevel)
-                    Log.d("EXP", progress.toString() + " " + userResponse.experience.toString())
-                    level = (userResponse.experience / maxExperienceForLevel)
-                } catch (e: Exception){
-                    errorMessage = e.message
-                }
-            } catch (e: Exception) {
-                errorMessage = "Error: ${e.message}"
-            } finally {
-                isLoading = false
-            }
-        }
-    }
+//    LaunchedEffect(Unit) {
+//        coroutineScope.launch {
+//            try {
+//                val token = AuthManager.getToken(context).first()
+//                if (token == null) {
+//                    errorMessage = "Not authenticated"
+//                    isLoading = false
+//                    return@launch
+//                }
+//                try {
+//                    val userResponse = GetUserUseCase(token)
+//                    // Преобразуем experience в процент (предположим, максимум для уровня 1 = 100)
+//                    val maxExperienceForLevel = 100
+//                    progress = (userResponse.experience % maxExperienceForLevel)
+//                    Log.d("EXP", progress.toString() + " " + userResponse.experience.toString())
+//                    level = (userResponse.experience / maxExperienceForLevel)
+//                } catch (e: Exception){
+//                    errorMessage = e.message
+//                }
+//            } catch (e: Exception) {
+//                errorMessage = "Error: ${e.message}"
+//            } finally {
+//                isLoading = false
+//            }
+//        }
+//    }
 
     BoxWithConstraints(
         modifier = Modifier
@@ -102,8 +98,6 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
             .background(Color(0xFFB3E5FC))
     ) {
         val screenWidth = LocalContext.current.resources.displayMetrics.widthPixels / LocalContext.current.resources.displayMetrics.density
-        val screenHeight = maxHeight
-        val circleSize = screenWidth * 0.35f
         val buttonSize = (screenWidth * 0.35f).dp
         val iconSize = (screenWidth * 0.1f).dp
         val textSize = screenWidth.coerceAtMost(360f) / 12
@@ -204,60 +198,22 @@ fun MainScreen(onNavigateTo: (Screen) -> Unit = {}) {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    CircleButton("Lessons", R.drawable.ic_lessons, buttonSize, iconSize, textSize.sp) {
+                    ButtonCircle("Lessons", R.drawable.ic_lessons, buttonSize, iconSize, textSize.sp) {
                         onNavigateTo(Screen.LessonScreen)
                     }
-                    CircleButton("Statistics", R.drawable.ic_statistics, buttonSize, iconSize, textSize.sp) {
+                    ButtonCircle("Statistics", R.drawable.ic_statistics, buttonSize, iconSize, textSize.sp) {
                         onNavigateTo(Screen.StatsScreen)
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                CircleButton("Credits", R.drawable.ic_credits, buttonSize, iconSize, textSize.sp) {
+                ButtonCircle("Credits", R.drawable.ic_credits, buttonSize, iconSize, textSize.sp) {
                     onNavigateTo(Screen.CreditsScreen)
                 }
             }
         }
     }
 }
-@Composable
-fun CircleButton(
-    text: String,
-    iconId: Int,
-    size: Dp,
-    iconSize: Dp,
-    fontSize: TextUnit,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .size(size)
-            .clip(CircleShape)
-            .background(Color(0x99f5e2e9))
-            .clickable { onClick() }
-            .border(width = 2.dp, color = Color(0xFFD97BA4), shape = CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                painter = painterResource(id = iconId),
-                contentDescription = text,
-                tint = Color(0xFFE91E63),
-                modifier = Modifier.size(iconSize)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = text,
-                fontSize = fontSize * 0.8,
-                color = Color(0xFFE91E63),
-                fontWeight = FontWeight.Bold,
-                fontFamily = ManropeBold
-            )
-        }
-    }
-}
+
 
 @Preview(
     showBackground = true,
